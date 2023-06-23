@@ -27,6 +27,6 @@ void loop() {
   _mloop.UpdateT();
   if (Serial.available() > 0) {
     String icString = Serial.readString();
-    _mloop.PushUpdate(&icString);
+    _mloop.PushUpdate(icString);
   }
 }

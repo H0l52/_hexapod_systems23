@@ -21,8 +21,8 @@ struct event {
   eventTarget l;
   basicEventTarget fallback;
 
-  int stage;
-  int stage_c;
+  unsigned long stage;
+  unsigned long stage_c;
 };
 
 

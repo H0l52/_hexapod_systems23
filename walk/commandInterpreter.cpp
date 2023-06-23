@@ -29,6 +29,7 @@ void commandInterpreter::addLeg(int *i) {
 }
 
 void commandInterpreter::WalkCycle(int leg) {
+  Serial.println("boi");
   Stepper * s = this->legs[leg].s_m;
   s->setSpeed(1);
   s->step(-(this->stepsPerRevolution/4));
@@ -37,6 +38,9 @@ void commandInterpreter::WalkCycle(int leg) {
 
 void commandInterpreter::procStep() {
   this->currentlyManaged.stage_c ++;
+  Serial.println("boi2");
+
+  //this expensive???
   if (this->currentlyManaged.l == na && this->currentlyManaged.fallback != na_b) {
     switch(this->currentlyManaged.fallback) {
       default:

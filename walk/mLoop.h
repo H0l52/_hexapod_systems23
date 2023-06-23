@@ -6,8 +6,8 @@
 
 class mLoop {
   private:
-    const static int commands_max_size = 20;
-    String* commands[commands_max_size];
+    const static int commands_max_size = 7;
+    String commands[commands_max_size];
     byte lencom = 0;
     unsigned long last_interval;
     const static unsigned long interval_delay = 100;
@@ -16,7 +16,7 @@ class mLoop {
   public:
     mLoop(commandInterpreter* ci);
     void UpdateT();
-    void PushUpdate(String* s);
+    void PushUpdate(String s);
     void KillUpdate(byte index);
     String readAndKill(byte index);
 };
