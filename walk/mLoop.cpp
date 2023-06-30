@@ -5,8 +5,8 @@ mLoop::mLoop(commandInterpreter* ci) {
 }
 
 void mLoop::UpdateT() {
-  if (this->last_interval + mLoop::interval_delay < millis()) {
-    this->last_interval = millis();
+  if (this->last_interval + mLoop::interval_delay < micros()) {
+    this->last_interval = micros();
     this->ci->procStep();
 
 

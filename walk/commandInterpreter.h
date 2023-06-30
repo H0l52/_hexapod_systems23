@@ -1,7 +1,7 @@
 #ifndef commandInterpreter_h
 #define commandInterpreter_h
 
-#include <Stepper.h>
+#include "stepper.h"
 #include <Arduino.h>
 
 enum basicEventTarget {
@@ -40,16 +40,20 @@ class commandInterpreter {
   private:
     const static int MAXSIZE = 6;
 
-    Leg legs[MAXSIZE];
+    
     byte leg_c = 0;
 
     int stepsPerRevolution; 
   public:
+    Leg legs[MAXSIZE];
+
+    
     commandInterpreter(int i);
     void addLeg(int i[12]);
     void WalkCycle(int leg);
     void procStep();
     event currentlyManaged;
+    void updateMotors();
 };
 
 

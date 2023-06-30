@@ -10,7 +10,7 @@ class mLoop {
     String commands[commands_max_size];
     byte lencom = 0;
     unsigned long last_interval;
-    const static unsigned long interval_delay = 100;
+    const static unsigned long interval_delay = 10;
     commandInterpreter* ci;
 
   public:

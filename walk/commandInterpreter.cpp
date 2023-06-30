@@ -1,6 +1,6 @@
 #include "commandInterpreter.h"
 
-#include <Stepper.h>
+#include "stepper.h"
 #include <Arduino.h>
 
 
@@ -8,12 +8,27 @@ commandInterpreter::commandInterpreter(int i) {
   this->stepsPerRevolution = i;
 }
 
-void commandInterpreter::addLeg(int *i) {
-  int step = this->stepsPerRevolution;
 
-  Stepper s1 = Stepper(step, i[0], i[1], i[2], i[3]);
-  Stepper s2 = Stepper(step, i[4], i[5], i[6], i[7]);
-  Stepper s3 = Stepper(step, i[8], i[9], i[10], i[11]);
+
+
+void commandInterpreter::updateMotors() {
+  this->legs[0].s_o->updateMotor();
+  /*for (int i =0; i < this->leg_c; i++) {
+    this->legs[i].s_m->updateMotor();
+    this->legs[i].s_o->updateMotor();
+    this->legs[i].s_z->updateMotor();
+  }*/
+}
+
+
+
+
+
+void commandInterpreter::addLeg(int *i) {
+
+  Stepper s1 = Stepper(this->stepsPerRevolution, i[0], i[1], i[2], i[3]);
+  Stepper s2 = Stepper(this->stepsPerRevolution, i[4], i[5], i[6], i[7]);
+  Stepper s3 = Stepper(this->stepsPerRevolution, i[8], i[9], i[10], i[11]);
 
   Leg l;
   
@@ -29,18 +44,25 @@ void commandInterpreter::addLeg(int *i) {
 }
 
 void commandInterpreter::WalkCycle(int leg) {
-  Serial.println("boi");
-  Stepper * s = this->legs[leg].s_m;
-  s->setSpeed(1);
-  s->step(-(this->stepsPerRevolution/4));
-  //s->step(this->stepsPerRevolution/4);
+  //Serial.println(this->stepsPerRevolution);
+  if (this->currentlyManaged.stage == 0) {
+    this->currentlyManaged.stage ++;
+    this->currentlyManaged.stage_c = 0;
+    
+    Stepper * s = this->legs[leg].s_o;
+    s->setSpeed(4);
+    s->step(this->stepsPerRevolution);
+  }
 }
 
-void commandInterpreter::procStep() {
-  this->currentlyManaged.stage_c ++;
-  Serial.println("boi2");
 
-  //this expensive???
+
+
+void commandInterpreter::procStep() {
+  
+  
+  this->currentlyManaged.stage_c ++;
+
   if (this->currentlyManaged.l == na && this->currentlyManaged.fallback != na_b) {
     switch(this->currentlyManaged.fallback) {
       default:
