@@ -5,16 +5,16 @@
 #include <Arduino.h>
 
 enum basicEventTarget {
+  na_b,
   walk,
-  stop,
-  na_b
+  stop
 };
 
 enum eventTarget {
+  na,
   home,
   pathfind,
-  idle,
-  na
+  idle
 };
 
 struct event {

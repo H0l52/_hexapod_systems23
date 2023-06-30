@@ -190,7 +190,6 @@ int Stepper::readStage() {
  * the motor moves in the reverse direction.
  */
 void Stepper::step(int steps_to_move) {
-  
   this->steps_left = abs(steps_to_move);  // how many steps to take
   // determine direction based on whether steps_to_mode is + or -:
   if (steps_to_move > 0) { this->direction = 1; }
@@ -293,6 +292,7 @@ void Stepper::forceStep(int steps_to_move)
  */
 void Stepper::stepMotor(int thisStep)
 {
+  
   if (this->pin_count == 2) {
     switch (thisStep) {
       case 0:  // 01
