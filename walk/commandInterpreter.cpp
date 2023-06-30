@@ -12,11 +12,12 @@ commandInterpreter::commandInterpreter(int i) {
 
 
 void commandInterpreter::updateMotors() {
-  for (int i =0; i < this->leg_c; i++) {
-    this->legs[i].s_m->updateMotor();
-    this->legs[i].s_o->updateMotor();
-    this->legs[i].s_z->updateMotor();
-  }
+  this->legs[0].s_o->updateMotor();
+  // for (int i =0; i < this->leg_c; i++) {
+  //   this->legs[i].s_m->updateMotor();
+  //   this->legs[i].s_o->updateMotor();
+  //   this->legs[i].s_z->updateMotor();
+  // }
 }
 
 
@@ -55,7 +56,7 @@ void commandInterpreter::WalkCycle(int leg) {
 
   if (this->currentlyManaged.stage == 1) {
     this->currentlyManaged.stage_c = this->legs[leg].s_o->readStage();
-    if (this->currentlyManaged.stage_c <= 1) {
+    if (this->currentlyManaged.stage_c <= 0) {
       this->currentlyManaged.stage ++;
     }
   }
@@ -71,7 +72,7 @@ void commandInterpreter::WalkCycle(int leg) {
 
   if (this->currentlyManaged.stage == 3) {
     this->currentlyManaged.stage_c = this->legs[leg].s_o->readStage();
-    if (this->currentlyManaged.stage_c <= 1) {
+    if (this->currentlyManaged.stage_c <= 0) {
       this->currentlyManaged.stage =-1;
     }
   }
