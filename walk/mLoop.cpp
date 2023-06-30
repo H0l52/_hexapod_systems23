@@ -18,7 +18,16 @@ void mLoop::UpdateT() {
         e.fallback = walk;
         e.stage_c = 0;
         e.stage = 0;
-        this->ci->currentlyManaged = e;
+        this->ci->nextManaged = e;
+      }
+      if (proc.startsWith("e")) {
+        event e;
+        e.l = na;
+        e.fallback = walk;
+        e.stage_c = 0;
+        e.stage = 0;
+        e.ovrd = true;
+        this->ci->nextManaged = e;
       }
     }
   }

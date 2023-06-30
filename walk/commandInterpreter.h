@@ -23,6 +23,32 @@ struct event {
 
   unsigned long stage;
   unsigned long stage_c;
+
+  bool ovrd = false;
+
+  inline bool operator==(const event& other) const
+  {
+    return 
+      (
+        this->l == other.l &&
+        this->fallback == other.fallback &&
+        this->stage != -1 &&
+        !other.ovrd
+      );
+  }
+
+  inline bool operator!=(const event& other) const
+  {
+    return !(*this == other);
+  }
+
+  inline bool operator<=(const event& other) const {
+    bool ob = !(
+      (*this == other) ||
+      (other.fallback == na_b &&
+      other.l == na));
+    return ob;
+  }
 };
 
 
@@ -42,17 +68,18 @@ class commandInterpreter {
 
     
     byte leg_c = 0;
-
+    event currentlyManaged;
     int stepsPerRevolution; 
   public:
     Leg legs[MAXSIZE];
 
-    
+
     commandInterpreter(int i);
     void addLeg(int i[12]);
     void WalkCycle(int leg);
     void procStep();
-    event currentlyManaged;
+    
+    event nextManaged;
     void updateMotors();
 };
 

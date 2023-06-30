@@ -180,6 +180,11 @@ void Stepper::setSpeed(long whatSpeed)
 }
 
 
+
+int Stepper::readStage() {
+  return this->steps_left;
+}
+
 /*
  * Prepares the motor for steps_to_move steps. If the number is negative,
  * the motor moves in the reverse direction.

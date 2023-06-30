@@ -51,7 +51,14 @@ void commandInterpreter::WalkCycle(int leg) {
     
     Stepper * s = this->legs[leg].s_o;
     s->setSpeed(4);
-    s->step(this->stepsPerRevolution);
+    s->step(this->stepsPerRevolution/2);
+  }
+
+  if (this->currentlyManaged.stage == 1) {
+    this->currentlyManaged.stage_c = this->legs[leg].s_o->readStage();
+    if (this->currentlyManaged.stage_c <= 1) {
+      this->currentlyManaged.stage = -1;
+    }
   }
 }
 
@@ -59,8 +66,25 @@ void commandInterpreter::WalkCycle(int leg) {
 
 
 void commandInterpreter::procStep() {
-  
-  
+  if (this->currentlyManaged <= this->nextManaged) {
+
+    Serial.println("---- Switching to ----");
+    Serial.print("e.l: "); Serial.print(this->nextManaged.l); 
+    Serial.print(" e.fallback: "); Serial.println(this->nextManaged.fallback);
+    Serial.print("e.stage: "); Serial.print(this->nextManaged.stage);
+    Serial.print(" e.stage_c: "); Serial.println(this->nextManaged.stage_c);
+    Serial.println("----------------------");
+
+    this->currentlyManaged = this->nextManaged;
+    event e;
+    e.l = na;
+    e.fallback = na_b;
+    e.stage_c = 0;
+    e.stage = 0;
+    this->nextManaged = e;
+  }
+
+
   this->currentlyManaged.stage_c ++;
 
   if (this->currentlyManaged.l == na && this->currentlyManaged.fallback != na_b) {

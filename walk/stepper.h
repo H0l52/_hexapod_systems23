@@ -99,6 +99,7 @@ class Stepper {
     void step(int number_of_steps);
 
     void updateMotor();
+    int readStage();
 
     int version(void);
 
