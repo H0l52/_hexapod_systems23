@@ -3,17 +3,6 @@
 #include "mLoop.h"
 
 const int stepsPerRevolution = 2038;
-// Rotate CW slowly at 5 RPM
-// myStepper.setSpeed(1);
-// myStepper.step(stepsPerRevolution/4);
-// delay(500);
-
-// // Rotate CCW quickly at 10 RPM
-// myStepper.setSpeed(1);
-// myStepper.step(-stepsPerRevolution/4);
-// delay(500);
-
-
 
 commandInterpreter cI(stepsPerRevolution);
 mLoop _mloop(&cI);
