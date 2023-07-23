@@ -1,19 +1,21 @@
 #include <Stepper.h>
 const int stepsPerRevolution = 2038;
 
-
-Stepper leg1Origin(stepsPerRevolution, 8, 10, 9, 11);
+int motors[20][4] = {8,10,9,11, 4,6,5,7, 22,26,24,28};
 
 void setup() {
   // put your setup code here, to run once:
-  leg1Origin.setSpeed(4);
+
   Serial.begin(9600);
+  
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
 
   static int c = 0;
+  static int l = 0;
+  static int m = 0;
   while (Serial.available()) {
     static char message[256];
     static unsigned int messagePos = 0;
@@ -26,17 +28,41 @@ void loop() {
     else {
       message[messagePos] = '\0';
       messagePos = 0;
-      c = atoi(message);
+
+      char lcopy[256];
+      memcpy(lcopy, message, sizeof message);
+      int i=0;
+      char *seperator = ":";
+      char response[1][20];
+      char *token = strtok(lcopy, seperator);
+      while((i<2)&&((token = strtok(NULL, seperator)) != NULL)) {
+        strcpy(response[i], token);
+        i++;
+      }
+
+      m = atoi(lcopy);
+      c = atoi(response[0]);
+      l = atoi(response[1]);
+
+      Serial.print("---\n");
+      Serial.print(m);
+      Serial.print("leg/");
+      Serial.print(c);
+      Serial.print("steps/");
+      Serial.println(l);
+      l *= 4;
       if (c > stepsPerRevolution) c = stepsPerRevolution;
       if (c < -stepsPerRevolution) c = -stepsPerRevolution;
       
 
-      memset(message, 0, sizeof message);
+      //memset(message, 0, sizeof message);
     }
   }
 
   if (c!=0) {
-    leg1Origin.step(c);
-    c=0;
+    Stepper s(stepsPerRevolution, motors[m][l], motors[m][l+1], motors[m][l+2], motors[m][l+3]);
+    s.setSpeed(1);
+    s.step(c);
+    c = 0;
   }
 }
