@@ -26,6 +26,7 @@ void setup() {
 }
 
 void loop() {
+  //cI.legs[0].s_m->step(20);
   cI.updateMotors();
   _mloop.UpdateT();
   if (Serial.available() > 0) {

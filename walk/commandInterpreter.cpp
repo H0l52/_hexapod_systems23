@@ -12,12 +12,14 @@ commandInterpreter::commandInterpreter(int i) {
 
 
 void commandInterpreter::updateMotors() {
-  this->legs[0].s_o->updateMotor();
-  // for (int i =0; i < this->leg_c; i++) {
-  //   this->legs[i].s_m->updateMotor();
-  //   this->legs[i].s_o->updateMotor();
-  //   this->legs[i].s_z->updateMotor();
-  // }
+  //this->legs[0].s_o->updateMotor();
+  //this->legs[0].s_z->updateMotor();
+  //this->legs[0].s_m->updateMotor();
+  for (int i =0; i < this->leg_c; i++) {
+    this->legs[i].s_m->updateMotor();
+    this->legs[i].s_o->updateMotor();
+    this->legs[i].s_z->updateMotor();
+  }
 }
 
 
@@ -26,19 +28,14 @@ void commandInterpreter::updateMotors() {
 
 void commandInterpreter::addLeg(int *i) {
 
-  Stepper s1 = Stepper(this->stepsPerRevolution, i[0], i[1], i[2], i[3]);
-  Stepper s2 = Stepper(this->stepsPerRevolution, i[4], i[5], i[6], i[7]);
-  Stepper s3 = Stepper(this->stepsPerRevolution, i[8], i[9], i[10], i[11]);
-
+  Stepper s1 = Stepper(2038, i[0], i[1], i[2], i[3]);
+  Stepper s2 = Stepper(2038, i[4], i[5], i[6], i[7]);
+  Stepper s3 = Stepper(2038, i[8], i[9], i[10], i[11]);
   Leg l;
   
   l.s_o = &s1;
   l.s_m = &s2;
   l.s_z = &s3;
-
-  l.a_m = 0;
-  l.a_o = 0;
-  l.a_z = 0;
 
   this->legs[this->leg_c++] = l;
 }
@@ -50,12 +47,21 @@ void commandInterpreter::WalkCycle(int leg) {
     this->currentlyManaged.stage_c = 0;
     
     Stepper * s = this->legs[leg].s_o;
-    s->setSpeed(8);
-    s->step(this->stepsPerRevolution/6);
+    s->setSpeed(1);
+    s->step(100);
+
+    Stepper * m = this->legs[leg].s_m;
+    m->setSpeed(1);
+    m->step(200);
+
+    Stepper * z = this->legs[leg].s_z;
+    z->setSpeed(1);
+    z->step(-100);
   }
 
   if (this->currentlyManaged.stage == 1) {
     this->currentlyManaged.stage_c = this->legs[leg].s_o->readStage();
+    Serial.println(this->currentlyManaged.stage_c);
     if (this->currentlyManaged.stage_c <= 0) {
       this->currentlyManaged.stage ++;
     }
@@ -66,12 +72,22 @@ void commandInterpreter::WalkCycle(int leg) {
     this->currentlyManaged.stage_c = 0;
     
     Stepper * s = this->legs[leg].s_o;
-    s->setSpeed(8);
-    s->step(-this->stepsPerRevolution/6);
+    s->setSpeed(1);
+    s->step(-100);
+
+
+    Stepper * m = this->legs[leg].s_m;
+    m->setSpeed(1);
+    m->step(-100);
+
+    Stepper * z = this->legs[leg].s_z;
+    z->setSpeed(1);
+    z->step(100);
   }
 
   if (this->currentlyManaged.stage == 3) {
     this->currentlyManaged.stage_c = this->legs[leg].s_o->readStage();
+    Serial.println(this->currentlyManaged.stage_c);
     if (this->currentlyManaged.stage_c <= 0) {
       this->currentlyManaged.stage =-1;
     }
