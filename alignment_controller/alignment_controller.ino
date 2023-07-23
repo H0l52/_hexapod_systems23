@@ -1,7 +1,7 @@
 #include <Stepper.h>
 const int stepsPerRevolution = 2038;
 
-int motors[20][4] = {8,10,9,11, 4,6,5,7, 22,26,24,28};
+int motors[20][4] = {8,10,9,11, 29,25,27,23, 22,26,24,28};
 
 void setup() {
   // put your setup code here, to run once:

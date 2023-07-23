@@ -22,7 +22,7 @@ void setup() {
     while (1);
   }
 
-  cI.addLeg(new int[12]{ 8,10,9,11, 4,6,5,7, 22,26,24,28,});
+  cI.addLeg(new int[12]{ 8,10,9,11, 29,25,27,23, 22,26,24,28});
 }
 
 void loop() {
