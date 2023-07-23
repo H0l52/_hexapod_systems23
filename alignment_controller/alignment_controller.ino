@@ -61,7 +61,7 @@ void loop() {
 
   if (c!=0) {
     Stepper s(stepsPerRevolution, motors[m][l], motors[m][l+1], motors[m][l+2], motors[m][l+3]);
-    s.setSpeed(1);
+    s.setSpeed(5);
     s.step(c);
     c = 0;
   }
