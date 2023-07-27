@@ -1,0 +1,46 @@
+{
+    "System Control" : [
+        {
+            "name":"StageAndWaitUntil",
+            "type":"container",
+            "color":"#4f33ff",
+            "minputs":{
+                "stage":"int",
+                "leg":"int",
+                "motor":"string"
+            },
+            "code":"if(this->currentEvent.stage == %%stage%%){\nAccelStepper s = *(this->legs[%%leg%%].%%motor%%);\nif(this->currentEvent.timeout==0){\nthis->currentEvent.timeout == -1;\n%%container%%;return;}\nif(s.distanceToGo()!=0){return;}\nthis->currentEvent.stage ++;\n this->currentEvent.timeout =0;\n return;}"
+        },
+        {
+            "name":"StageEnd",
+            "color":"#4f33ff",
+            "minputs":{
+                "stage":"int"
+            },
+            "code":"if(this->currentEvent.stage == %%stage%%) {this->currentEvent.stage = -1; return;}"
+        }
+    ],
+    "Individual Motor Control":[
+        {
+            "name":"MoveMotor",
+            "color":"#f553f3",
+            "inputs":{
+                "leg":"int",
+                "location":"int",
+                "acceleration":"int",
+                "maxSpeed":"int",
+                "motor":"string"
+            },
+            "code":"AccelStepper s = *(this->legs[leg].motor);\ns.setMaxSpeed(maxSpeed);\ns.setAcceleration(acceleration);\ns.moveTo(location);"
+        },
+        {
+            "name":"MoveKnee",
+            "color":"#f553f3",
+            "inputs": {
+                "leg":"int",
+                "location":"int"
+            },
+            "code":"MoveMotor(leg,location,100,100,\"h_z\");"
+        }
+    ]
+}

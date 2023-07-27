@@ -36,6 +36,8 @@ void LegControl::procStep() {
     this->currentEvent = this->eventList[0];
     memmove(&this->eventList[0], &this->eventList[1], this->eventListSize-- - 1);
   }
+
+  
 }
 
 
