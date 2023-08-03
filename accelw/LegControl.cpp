@@ -1,5 +1,5 @@
 #include "LegControl.h"
-#include <AccelStepper.h>
+
 
 /// Initialises all the motors,
 /// and returns the legcontrol class reference.
@@ -37,16 +37,23 @@ void LegControl::procStep() {
     memmove(&this->eventList[0], &this->eventList[1], this->eventListSize-- - 1);
   }
 
+  /// Exit code hit
+  int x = this->currentEvent.Proc(this->legs, this->currentPosition);
+  if(x != 0) {
+    Logging::Warning("Event Died - Status: " + x);
+    this->currentEvent = this->eventList[0];
+    memmove(&this->eventList[0], &this->eventList[1], this->eventListSize-- - 1);
+  }
   
 }
 
 
 /// Submit an event to the leg controller safely,
 /// prevents crashes from occuring.
-void LegControl::submitEvent(event ev, bool override) {
+void LegControl::submitEvent(Event ev, bool override) {
   /// "Safe" memory practices.
   if (this->eventListSize == this->MAX_EVENTLIST_SIZE) {
-    Serial.println("EVENT OVERFLOW. DROPPING EVENT."); return;
+    Logging::Ard("EVENT OVERFLOW. DROPPING EVENT."); return;
   }
 
   /// If override is set, force the event in, and clear memory of the list.
