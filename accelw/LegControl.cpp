@@ -19,13 +19,15 @@ LegControl::LegControl(int *i) {
     this->legs[this->leg_c++] = l;
   }
 
+  this->currentPosition = vector2D(0,0);
+
 }
 
 
 
 int LegControl::AttemptEventProc() {
   if (this->currentEvent == NULL) return 0;
-  return this->currentEvent->Proc(this->legs, NULL);
+  return this->currentEvent->Proc(this->legs, this->currentPosition);
 }
 
 

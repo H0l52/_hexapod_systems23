@@ -16,7 +16,7 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   // One time stage code for motor information... etc.
   if (this->Stage(0)) {
     Logging::Info("Walk");
-    this->timeout = 100000;
+    this->timeout = 10000;
   }
 
   // Interpolate from infinity down to 0 (when stage wait will call).
