@@ -35,8 +35,12 @@ void setup() {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
+  WalkEvent e;
+  WalkEvent b;
+  lc.submitEvent(&e, false);
+  lc.submitEvent(&b, false);
 }
 
 void loop() {
-
+  lc.procStep();
 }

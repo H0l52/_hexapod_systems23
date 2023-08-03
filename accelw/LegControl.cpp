@@ -21,43 +21,57 @@ LegControl::LegControl(int *i) {
 
 }
 
+
+
+int LegControl::AttemptEventProc() {
+  if (this->currentEvent == NULL) return 0;
+  return this->currentEvent->Proc(this->legs, NULL);
+}
+
+
 /// Processes next events in the leg controller. 
 /// This should only be run by the internal timer (void loop),
 /// and not called by any other function.
 void LegControl::procStep() {
 
-  /// Double event send, assume error due to no override value set.
-  while (this->currentEvent == this->eventList[0]) {
-    memmove(&this->eventList[0], &this->eventList[1], this->eventListSize-- - 1);
+  if (this->currentEvent == NULL) return;
+  /// If currentEvent should be take over by eventlist.next, set it, and drop the list size.
+  if ((*this->currentEvent) <= (*(this->eventList[0]))) {
+    if (this->eventListSize == 0) this->currentEvent = NULL;
+    else {
+      this->currentEvent = this->eventList[0];
+      memmove(&this->eventList[0], &this->eventList[1], this->eventListSize-- - 1);
+    }
   }
 
-  /// If currentEvent should be take over by eventlist.next, set it, and drop the list size.
-  if (this->currentEvent <= this->eventList[0]) {
-    this->currentEvent = this->eventList[0];
-    memmove(&this->eventList[0], &this->eventList[1], this->eventListSize-- - 1);
-  }
+  /// Double event send, assume error due to no override value set.
+  // while (this->eventListSize != 0 && ((*this->currentEvent) == (*(this->eventList[0])))) {
+  //   memmove(&this->eventList[0], &this->eventList[1], this->eventListSize-- - 1);
+  // }
 
   /// Exit code hit
-  int x = this->currentEvent.Proc(this->legs, this->currentPosition);
+  int x = AttemptEventProc();
   if(x != 0) {
-    Logging::Warning("Event Died - Status: " + x);
-    this->currentEvent = this->eventList[0];
-    memmove(&this->eventList[0], &this->eventList[1], this->eventListSize-- - 1);
+    Logging::Warning("Event Died");
+    if (this->eventListSize == 0) this->currentEvent = NULL;
+    else {
+      this->currentEvent = this->eventList[0];
+      memmove(&this->eventList[0], &this->eventList[1], this->eventListSize-- - 1);
+    }
   }
   
 }
 
-
 /// Submit an event to the leg controller safely,
 /// prevents crashes from occuring.
-void LegControl::submitEvent(Event ev, bool override) {
+void LegControl::submitEvent(Event *ev, bool override) {
   /// "Safe" memory practices.
   if (this->eventListSize == this->MAX_EVENTLIST_SIZE) {
     Logging::Ard("EVENT OVERFLOW. DROPPING EVENT."); return;
   }
 
   /// If override is set, force the event in, and clear memory of the list.
-  if (override) {
+  if (override || (this->eventListSize == 0 && this->currentEvent == NULL)) {
     this->currentEvent = ev; 
     memset(this->eventList, 0, this->MAX_EVENTLIST_SIZE);
     return;
