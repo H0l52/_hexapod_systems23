@@ -34,8 +34,8 @@ struct Leg {
 };
 
 struct vector2D {
-  unsigned int x;
-  unsigned int y;
+  int x;
+  int y;
 
   vector2D(int a=0, int b=0) {
     x = a; y = b;
