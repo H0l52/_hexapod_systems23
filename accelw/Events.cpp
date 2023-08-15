@@ -16,6 +16,9 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   // One time stage code for motor information... etc.
   if (this->Stage(0)) {
     Logging::Info("Stage1");
+    legs[0].h_z->setAcceleration(100.0);
+    legs[0].h_z->setMaxSpeed(200.0);
+    legs[0].h_z->moveTo(100);
     this->timeout = 100000;
   }
 

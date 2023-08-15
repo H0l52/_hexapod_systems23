@@ -108,6 +108,14 @@ class Event {
       if (last_stage == this->stage) this->stage = -1;
     }
 
+    static void runMotors(Leg legs[6]) {
+      for (int i = 0; i < 6; i++) {
+        legs[i].h_z->run();
+        legs[i].o_xy->run();
+        legs[i].o_z->run();
+      }
+    } 
+
 };
 
 class WalkEvent : public Event {

@@ -27,6 +27,7 @@ LegControl::LegControl(int *i) {
 
 int LegControl::AttemptEventProc() {
   if (this->currentEvent == NULL) return 0;
+  Event::runMotors(this->legs);
   return this->currentEvent->Proc(this->legs, this->currentPosition);
 }
 
