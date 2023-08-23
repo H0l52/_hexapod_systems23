@@ -16,7 +16,8 @@ class LegControl {
   public:
     const static int MAXSIZE = 6;
     
-    LegControl(int i[MAXSIZE*12]);
+    LegControl();
+    void setup(int i[MAXSIZE*12], MCP23008* mcp);
     void procStep();
     void submitEvent(Event *ev, bool override);
     int AttemptEventProc();

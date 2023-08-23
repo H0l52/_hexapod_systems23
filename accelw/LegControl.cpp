@@ -1,15 +1,22 @@
 #include "LegControl.h"
+#include "MCP23008.h"
 
+LegControl::LegControl() {
 
+}
 /// Initialises all the motors,
 /// and returns the legcontrol class reference.
-LegControl::LegControl(int *i) {
+void LegControl::setup(int *i, MCP23008* mcp) {
   
   for (uint8_t e = 0; e < 6; e++) {
     uint8_t index = e * 12;
-    AccelStepper xy(AccelStepper::FULL4WIRE, i[index++], i[index++], i[index++], i[index++], true);
-    AccelStepper z(AccelStepper::FULL4WIRE, i[index++], i[index++], i[index++], i[index++], true);
-    AccelStepper k(AccelStepper::FULL4WIRE, i[index++], i[index++], i[index++], i[index++], true);
+
+    MCP23008* mcp2 = NULL;
+    if (e == 0) mcp2=mcp;
+
+    AccelStepper xy(AccelStepper::FULL4WIRE, i[index++], i[index++], i[index++], i[index++], true, NULL);
+    AccelStepper z(AccelStepper::FULL4WIRE, i[index++], i[index++], i[index++], i[index++], true, NULL);
+    AccelStepper k(AccelStepper::FULL4WIRE, i[index++], i[index++], i[index++], i[index++], true, NULL);
 
     Leg l;
     l.o_xy = &xy;
@@ -36,7 +43,6 @@ int LegControl::AttemptEventProc() {
 /// This should only be run by the internal timer (void loop),
 /// and not called by any other function.
 void LegControl::procStep() {
-
   if (this->currentEvent == NULL) return;
   /// If currentEvent should be take over by eventlist.next, set it, and drop the list size.
   if ((*this->currentEvent) <= (*(this->eventList[0]))) {
