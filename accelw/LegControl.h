@@ -13,11 +13,13 @@ class LegControl {
 
     const static int STEPSPERREVOLUTION = 2038;
 
+    int *mlist;
+
   public:
     const static int MAXSIZE = 6;
     
-    LegControl();
-    void setup(int i[MAXSIZE*12], MCP23008* mcp);
+    LegControl(int i[MAXSIZE*12]);
+    void setup(MCP23008* mp);
     void procStep();
     void submitEvent(Event *ev, bool override);
     int AttemptEventProc();

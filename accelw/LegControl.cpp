@@ -1,22 +1,14 @@
 #include "LegControl.h"
 #include "MCP23008.h"
 
-LegControl::LegControl() {
-
-}
-/// Initialises all the motors,
-/// and returns the legcontrol class reference.
-void LegControl::setup(int *i, MCP23008* mcp) {
-  
+LegControl::LegControl(int *i) {
+  mlist = i;
   for (uint8_t e = 0; e < 6; e++) {
     uint8_t index = e * 12;
 
-    MCP23008* mcp2 = NULL;
-    if (e == 0) mcp2=mcp;
-
-    AccelStepper xy(AccelStepper::FULL4WIRE, i[index++], i[index++], i[index++], i[index++], true, NULL);
-    AccelStepper z(AccelStepper::FULL4WIRE, i[index++], i[index++], i[index++], i[index++], true, NULL);
-    AccelStepper k(AccelStepper::FULL4WIRE, i[index++], i[index++], i[index++], i[index++], true, NULL);
+    AccelStepper xy(AccelStepper::FULL4WIRE, mlist[index++], mlist[index++], mlist[index++], mlist[index++], true);
+    AccelStepper z(AccelStepper::FULL4WIRE, mlist[index++], mlist[index++], mlist[index++], mlist[index++], true);
+    AccelStepper k(AccelStepper::FULL4WIRE, mlist[index++], mlist[index++], mlist[index++], mlist[index++], true);
 
     Leg l;
     l.o_xy = &xy;
@@ -25,9 +17,16 @@ void LegControl::setup(int *i, MCP23008* mcp) {
 
     this->legs[this->leg_c++] = l;
   }
+}
 
-  this->currentPosition = vector2D(0,0);
+/// Initialises all the motors,
+/// and returns the legcontrol class reference.
+void LegControl::setup(MCP23008* mp) {
 
+  this->currentPosition = vector2D(0, 0);
+
+  this->legs[0].o_z->mpcont = mp;
+  this->legs[0].o_z->enableOutputs();
 }
 
 
@@ -39,7 +38,7 @@ int LegControl::AttemptEventProc() {
 }
 
 
-/// Processes next events in the leg controller. 
+/// Processes next events in the leg controller.
 /// This should only be run by the internal timer (void loop),
 /// and not called by any other function.
 void LegControl::procStep() {
@@ -60,7 +59,7 @@ void LegControl::procStep() {
 
   /// Exit code hit
   int x = AttemptEventProc();
-  if(x != 0) {
+  if (x != 0) {
     Logging::Warning("Event Died");
     if (this->eventListSize == 0) this->currentEvent = NULL;
     else {
@@ -68,7 +67,6 @@ void LegControl::procStep() {
       memmove(&this->eventList[0], &this->eventList[1], this->eventListSize-- - 1);
     }
   }
-  
 }
 
 /// Submit an event to the leg controller safely,
@@ -76,15 +74,16 @@ void LegControl::procStep() {
 void LegControl::submitEvent(Event *ev, bool override) {
   /// "Safe" memory practices.
   if (this->eventListSize == this->MAX_EVENTLIST_SIZE) {
-    Logging::Ard("EVENT OVERFLOW. DROPPING EVENT."); return;
+    Logging::Ard("EVENT OVERFLOW. DROPPING EVENT.");
+    return;
   }
 
   /// If override is set, force the event in, and clear memory of the list.
   if (override || (this->eventListSize == 0 && this->currentEvent == NULL)) {
-    this->currentEvent = ev; 
+    this->currentEvent = ev;
     memset(this->eventList, 0, this->MAX_EVENTLIST_SIZE);
     return;
   }
-  
+
   this->eventList[this->eventListSize++] = ev;
 }

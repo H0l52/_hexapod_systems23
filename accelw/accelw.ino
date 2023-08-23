@@ -27,18 +27,17 @@ int steppers[6*12] = {//8,10,9,11, 29,25,27,23, 22,26,24,28,
                       0,0,0,0, 0,0,0,0, 0,0,0,0
                       };
 
-LegControl lc;
+LegControl lc(steppers);
 
-MCP23008 mxp(0x20);
+MCP23008 mpx(0x20);
 /// Start LoRa and Serial.
 void setup() {
-  
+  lc.setup(&mpx);
   Serial.begin(9600);
   while (!Serial);
 
-  mxp.begin();
-  lc.setup(steppers, &mxp);
   Serial.println("Didn\'t fail pre boot.");
+  
 
   if (!LoRa.begin(915E6)) {
     Serial.println("Starting LoRa failed!");
