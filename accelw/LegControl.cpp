@@ -12,9 +12,9 @@ LegControl::LegControl(int *i) {
     AccelStepper k(AccelStepper::FULL4WIRE, i[index++], i[index++], i[index++], i[index++], true);
 
     Leg l;
-    l.o_xy = &xy;
-    l.o_z = &z;
-    l.h_z = &k;
+    l.o_xy = xy;
+    l.o_z = z;
+    l.h_z = k;
 
     this->legs[this->leg_c++] = l;
   }

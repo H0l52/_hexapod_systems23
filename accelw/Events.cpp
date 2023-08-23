@@ -16,9 +16,9 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   // One time stage code for motor information... etc.
   if (this->Stage(0)) {
     Logging::Info("Stage1");
-    legs[0].h_z->setAcceleration(100.0);
-    legs[0].h_z->setMaxSpeed(200.0);
-    legs[0].h_z->moveTo(100);
+    legs[0].o_xy.setAcceleration(100.0);
+    legs[0].o_xy.setMaxSpeed(200.0);
+    legs[0].o_xy.moveTo(1000);
     this->timeout = 100000;
   }
 
@@ -35,6 +35,7 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
 
   // Waits for next stage
   if (this->StageWait()) return 0;
+  if (this->stage == 2) {this->stage=0; this->timeout=0; Serial.print("loop");}
   this->End(2);
   return 0;
 }

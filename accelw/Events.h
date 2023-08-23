@@ -28,9 +28,9 @@ class Logging {
 };
 
 struct Leg {
-  AccelStepper* o_xy;
-  AccelStepper* o_z;
-  AccelStepper* h_z;
+  AccelStepper o_xy;
+  AccelStepper o_z;
+  AccelStepper h_z;
 };
 
 struct vector2D {
@@ -110,9 +110,9 @@ class Event {
 
     static void runMotors(Leg legs[6]) {
       for (int i = 0; i < 6; i++) {
-        legs[i].h_z->run();
-        legs[i].o_xy->run();
-        legs[i].o_z->run();
+        legs[i].h_z.run();
+        legs[i].o_xy.run();
+        legs[i].o_z.run();
       }
     } 
 

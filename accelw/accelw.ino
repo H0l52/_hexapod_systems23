@@ -16,7 +16,8 @@
 /// pin1, pin3, pin2, pin4
 /// libpin1, libpin2, libpin3, libpin4
 ///
-int steppers[6*12] = {8,10,9,11, 29,25,27,23, 22,26,24,28,
+int steppers[6*12] = {//8,10,9,11, 29,25,27,23, 22,26,24,28,
+                      4,6,5,7, 0,0,0,0, 0,0,0,0,
                       0,0,0,0, 0,0,0,0, 0,0,0,0,
                       0,0,0,0, 0,0,0,0, 0,0,0,0,
                       0,0,0,0, 0,0,0,0, 0,0,0,0,
@@ -30,6 +31,7 @@ LegControl lc(steppers);
 /// Start LoRa and Serial.
 void setup() {
   Serial.begin(9600);
+  Serial.print("ididntdie");
   while (!Serial);
   if (!LoRa.begin(915E6)) {
     Serial.println("Starting LoRa failed!");
@@ -38,7 +40,7 @@ void setup() {
   WalkEvent e;
   WalkEvent b;
   lc.submitEvent(&e, false);
-  lc.submitEvent(&b, false);
+  //lc.submitEvent(&b, false);
 }
 
 void loop() {
