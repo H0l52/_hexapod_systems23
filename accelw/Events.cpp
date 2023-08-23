@@ -18,15 +18,19 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   // One time stage code for motor information... etc.
   if (this->Stage(0)) {
     Logging::Info("Stage1");
-    legs[0].o_xy->setAcceleration(100.0);
-    legs[0].o_xy->setMaxSpeed(200.0);
-    legs[0].o_xy->moveTo(100);
+    legs[0].o_xy.setAcceleration(100.0);
+    legs[0].o_xy.setMaxSpeed(200.0);
+    legs[0].o_xy.move(1000);
+
+    legs[0].o_z.setAcceleration(legs[0].o_z.acceleration() + 100);
+    legs[0].o_z.setMaxSpeed(legs[0].o_z.maxSpeed() + 100);
+    legs[0].o_z.move(-1000);
     this->timeout = 10000;
   }
 
   if (this->Stage(1)) {
     Logging::Info("Stage2");
-    this->timeout = 20000;
+    this->timeout = 10000;
   }
 
   // Interpolate from infinity down to 0 (when stage wait will call).

@@ -32,6 +32,7 @@ LegControl lc(steppers);
 MCP23008 mpx(0x20);
 /// Start LoRa and Serial.
 void setup() {
+  mpx.begin();
   lc.setup(&mpx);
   Serial.begin(9600);
   while (!Serial);

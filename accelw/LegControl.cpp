@@ -11,9 +11,9 @@ LegControl::LegControl(int *i) {
     AccelStepper k(AccelStepper::FULL4WIRE, mlist[index++], mlist[index++], mlist[index++], mlist[index++], true);
 
     Leg l;
-    l.o_xy = &xy;
-    l.o_z = &z;
-    l.h_z = &k;
+    l.o_xy = xy;
+    l.o_z = z;
+    l.h_z = k;
 
     this->legs[this->leg_c++] = l;
   }
@@ -25,8 +25,8 @@ void LegControl::setup(MCP23008* mp) {
 
   this->currentPosition = vector2D(0, 0);
 
-  this->legs[0].o_z->mpcont = mp;
-  this->legs[0].o_z->enableOutputs();
+  this->legs[0].o_z.mpcont = mp;
+  this->legs[0].o_z.enableOutputs();
 }
 
 
