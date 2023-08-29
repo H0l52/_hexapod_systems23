@@ -6,9 +6,9 @@ LegControl::LegControl(int *i) {
   for (uint8_t e = 0; e < 6; e++) {
     uint8_t index = e * 12;
 
-    AccelStepper xy(AccelStepper::FULL4WIRE, mlist[index++], mlist[index++], mlist[index++], mlist[index++], true);
-    AccelStepper z(AccelStepper::FULL4WIRE, mlist[index++], mlist[index++], mlist[index++], mlist[index++], true);
-    AccelStepper k(AccelStepper::FULL4WIRE, mlist[index++], mlist[index++], mlist[index++], mlist[index++], true);
+    AccelStepper xy(AccelStepper::FULL4WIRE, mlist[index], mlist[index+2], mlist[index+1], mlist[index+3], true);
+    AccelStepper z(AccelStepper::FULL4WIRE, mlist[index+4], mlist[index+6], mlist[index+5], mlist[index+7], true);
+    AccelStepper k(AccelStepper::FULL4WIRE, mlist[index+8], mlist[index+10], mlist[index+9], mlist[index+11], true);
 
     Leg l;
     l.o_xy = xy;
@@ -25,8 +25,11 @@ void LegControl::setup(MCP23008* mp) {
 
   this->currentPosition = vector2D(0, 0);
 
-  this->legs[0].o_z.mpcont = mp;
-  this->legs[0].o_z.enableOutputs();
+  // this->legs[0].o_z.mpcont = mp;
+  // this->legs[0].o_z.enableOutputs();
+
+  // this->legs[0].h_z.mpcont = mp;
+  // this->legs[0].h_z.enableOutputs();
 }
 
 
