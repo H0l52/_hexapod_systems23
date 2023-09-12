@@ -45,7 +45,7 @@ void setup() {
     while (1);
   }
   WalkEvent e;
-  WalkEvent b;
+  //WalkEvent b;
   lc.submitEvent(&e, false);
   //lc.submitEvent(&b, false);
 }
