@@ -1,4 +1,5 @@
 #include <AccelStepper.h>
+#include <Servo.h>
 #include <SPI.h>
 #include <LoRa.h>
 #include <Arduino.h>
@@ -29,8 +30,8 @@ class Logging {
 
 struct Leg {
   AccelStepper o_xy;
-  AccelStepper o_z;
-  AccelStepper h_z;
+  Servo o_z;
+  Servo h_z;
 };
 
 struct vector2D {
@@ -107,12 +108,14 @@ class Event {
     void End(byte last_stage) {
       if (last_stage == this->stage) this->stage = -1;
     }
+    
+    void WriteServoSafe(Servo s, int angle ) {
+      s.write(map(angle,0,180,0,180));
+    }
 
     static void runMotors(Leg legs[6]) {
       for (int i = 0; i < 6; i++) {
-        legs[i].h_z.run();
         legs[i].o_xy.run();
-        legs[i].o_z.run();
       }
     } 
 

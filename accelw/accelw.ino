@@ -1,3 +1,4 @@
+// Include all of the necessary files
 #include <AccelStepper.h>
 #include "LegControl.h"
 #include <SPI.h>
@@ -18,38 +19,49 @@
 /// pin1, pin3, pin2, pin4
 /// libpin1, libpin2, libpin3, libpin4
 ///
-int steppers[6*12] = {
-  47,49,51,53, 23,25,27,29, 2,3,4,5,
-  46,48,50,52, 31,33,35,37, 14,15,22,24,
-  34,36,38,40, 39,41,43,45, 16,17,18,19,
-  A4,A5,42,44, A11,A12,A13,A14, 6,7,8,9,
-  0,1,2,3, A7,A8,A9,A10, 10,11,12,13, 
-  4,5,6,7, A0,A1,A2,A3, 26,28,30,32,
+
+/// LegSchema:
+/// StepperMotor, Servo Base, Servo Foot
+int legss[(4 + 2)*6] = {
+  
   };
 
-LegControl lc(steppers);
+// Initiate the data structures
+LegControl lc(legss);
 
-MCP23008 mpx(0x20);
+
+MCP23008 mpx1(0x20);
+MCP23008 mpx2(0x21);
+MCP23008 mpx3(0x22);
+
+
 /// Start LoRa and Serial.
 void setup() {
-  mpx.begin();
-  lc.setup(&mpx);
-  Serial.begin(9600);
-  while (!Serial);
+  mpx1.begin(); // Begin pin extendor
+  mpx2.begin();
+  mpx3.begin();
+  lc.setup(&mpx1, &mpx2, &mpx3); // Setup the pin extendor
+  Serial.begin(9600); // Begin serial
+  while (!Serial); // Wait for serial
 
-  Serial.println("Didn\'t fail pre boot.");
+  Serial.println("Didn\'t fail pre boot."); // A quick it worked.
   
 
+  // Begin lora on the correct wavelength, and print if it fails.
   if (!LoRa.begin(915E6)) {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
+
+  ///// IGNORE
+
   WalkEvent e;
   //WalkEvent b;
   lc.submitEvent(&e, false);
   //lc.submitEvent(&b, false);
 }
 
+// Process steps every clock cycle.
 void loop() {
   lc.procStep();
 }

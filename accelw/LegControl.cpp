@@ -1,14 +1,19 @@
+// The necessary includes.
 #include "LegControl.h"
 #include "MCP23008.h"
 
 LegControl::LegControl(int *i) {
   mlist = i;
   for (uint8_t e = 0; e < 6; e++) {
-    uint8_t index = e * 12;
+    uint8_t index = e * 6;
 
     AccelStepper xy(AccelStepper::FULL4WIRE, mlist[index], mlist[index+2], mlist[index+1], mlist[index+3], true);
-    AccelStepper z(AccelStepper::FULL4WIRE, mlist[index+4], mlist[index+6], mlist[index+5], mlist[index+7], true);
-    AccelStepper k(AccelStepper::FULL4WIRE, mlist[index+8], mlist[index+10], mlist[index+9], mlist[index+11], true);
+    Servo z;
+    z.attach(index+4);
+    z.write(90);
+    Servo k;
+    k.attach(index+5);
+    k.write(90);
 
     Leg l;
     l.o_xy = xy;
@@ -21,10 +26,18 @@ LegControl::LegControl(int *i) {
 
 /// Initialises all the motors,
 /// and returns the legcontrol class reference.
-void LegControl::setup(MCP23008* mp) {
+void LegControl::setup(MCP23008* mp,MCP23008* mp2,MCP23008* mp3) {
 
   this->currentPosition = vector2D(0, 0);
-
+  this->legs[0].o_xy.mpcont = mp;
+  this->legs[1].o_xy.mpcont = mp;
+  this->legs[2].o_xy.mpcont = mp2;
+  this->legs[3].o_xy.mpcont = mp2;
+  this->legs[4].o_xy.mpcont = mp3;
+  this->legs[5].o_xy.mpcont = mp3;
+  for (int i = 0; i < 6; i++) {
+    this->legs[i].o_xy.enableOutputs();
+  }
   // this->legs[0].o_z.mpcont = mp;
   // this->legs[0].o_z.enableOutputs();
 
