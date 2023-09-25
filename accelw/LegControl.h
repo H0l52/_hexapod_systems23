@@ -36,7 +36,7 @@ class LegControl {
     LegControl(int i[MAXSIZE*6]);
 
     // Setup function for the MCP pin expander
-    void setup(MCP23008* mp,MCP23008* mp2,MCP23008* mp3);
+    void setup(Servo s[12], MCP23008* mp,MCP23008* mp2,MCP23008* mp3);
 
     // A generic process step function.
     void procStep();
@@ -49,6 +49,7 @@ class LegControl {
 
     // The actual legs list.
     Leg legs[MAXSIZE];
+    
 
     // Vector2D position for utilities.
     vector2D currentPosition;

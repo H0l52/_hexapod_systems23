@@ -108,7 +108,7 @@ class Event {
     void End(byte last_stage) {
       if (last_stage == this->stage) this->stage = -1;
     }
-    
+
     void WriteServoSafe(Servo s, int angle ) {
       s.write(map(angle,0,180,0,180));
     }
@@ -130,9 +130,9 @@ class WalkEvent : public Event {
 
 
 
-class StopEvent : public Event {
+class SyncEvent : public Event {
   public:
-    StopEvent() : Event(2) {
+    SyncEvent() : Event(2) {
     };
     int Proc(Leg legs[6], vector2D position);
 };
