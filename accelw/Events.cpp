@@ -1,14 +1,19 @@
 #include "Events.h"
 
+// Base initializer 
 Event::Event() :
   Event(0) {}
 
+// Main initializer - creates and id based stage 0 event.
 Event::Event(byte id) {
   this->identifier = id;
   this->stage = 0;
   this->timeout = 0;
 }
 
+// this is from the event header file - but for some reason it wont compile when its in there
+// so i moved it here.
+int Logging::msgCount = 0;
 
 
 /*
@@ -71,6 +76,14 @@ inline void ReturnBack(Leg *l, int index) {
 }
 
 int WalkEvent::Proc(Leg *legs, vector2D position) {
+
+  // Right front - 2
+  // Right middle - 1
+  // Right back - 0
+  // Left front = 3
+  // Left middle = 4
+  // Left back = 5
+
   unsigned long timeCoeff = 10000 / 2;
   
   int moveAmount = 100;
@@ -95,8 +108,16 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
 
   if (this->Stage(1)) {
     Logging::Info("Stage 1");
+    // RF back
     // RM mid move
+    // RB return back
+    // LF drop
     // LM back
+    // LB raise
+
+    ReturnBack(&legs[0],0);
+    Drop(&legs[3]);
+    Raise(&legs[5],5);
 
     this->timeout = timeCoeff;
   }
@@ -104,11 +125,17 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   if (this->Stage(2)) {
     Logging::Info("Stage 2");
 
+    // RF raise
     // RM drop
+    // RB back
+    // LF Return back
     // LM back
+    // LB move
 
-    legs[1].h_z.write(90);
-    legs[1].o_z.write(90);
+    Raise(&legs[2],2);
+    Drop(&legs[1]);
+    ReturnBack(&legs[3],3);
+
 
     this->timeout = timeCoeff;
   }
@@ -118,12 +145,11 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
 
     // RM back
     // LM raise
-    legs[1].o_xy.moveTo(moveAmount);
+    // LB drop
 
-    legs[4].h_z.write(110);
-    legs[4].o_z.write(110);
-
-    legs[4].o_xy.moveTo(moveAmount);
+    ReturnBack(&legs[1],1);
+    Raise(&legs[4],4);
+    Drop(&legs[5]);
 
     this->timeout = timeCoeff;
   }
@@ -133,6 +159,14 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
 
     // RM back
     // LM move
+
+    // RF drop
+    // RB Raise
+    // LB return back
+
+    Drop(&legs[2]);
+    Raise(&legs[0],0);
+    ReturnBack(&legs[5],5);
     
 
     this->timeout = timeCoeff;
@@ -144,8 +178,12 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
     // RM back
     // LM drop
 
-    legs[4].h_z.write(90);
-    legs[4].o_z.write(90);
+    // RF return back
+    // LF raise
+
+    ReturnBack(&legs[2],2);
+    Drop(&legs[4]);
+    Raise(&legs[3],3);
 
     this->timeout = timeCoeff;
   }
@@ -155,12 +193,11 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
     
     // RM Raise
     // LM back
-    
-    legs[1].h_z.write(70);
-    legs[1].o_z.write(70);
+    Raise(&legs[1],1);
+    ReturnBack(&legs[4],4);
 
-    legs[1].o_xy.moveTo(-moveAmount);
-    legs[4].o_xy.moveTo(-moveAmount);
+    // RB drop
+    Drop(&legs[0]);
 
     this->timeout = timeCoeff;
   }

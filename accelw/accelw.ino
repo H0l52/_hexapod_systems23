@@ -97,27 +97,31 @@ bool MetalDetect() {
       prev_flash=timestamp;   
     }
     if (flash_period>1000)ledstat=0;
-
-    //switch the LEDs to this setting
-    if (ledstat==0){
-      // digitalWrite(pin_LED1,LOW);
-      // digitalWrite(pin_LED2,LOW);
-      // if(sound)noTone(pin_tone);
-    }
-    if (ledstat==1){
-      // digitalWrite(pin_LED1,HIGH);
-      // digitalWrite(pin_LED2,LOW);
-      // if(sound)tone(pin_tone,2000);
-    }
-    if (ledstat==2){
-      // digitalWrite(pin_LED1,LOW);
-      // digitalWrite(pin_LED2,HIGH);
-      // if(sound)tone(pin_tone,500);
-    }
   
   }
+  //subtract minimum and maximum value to remove spikes
+  sum-=minval; sum-=maxval;
+  
+  //process
+  if (sumsum==0) sumsum=sum<<6; //set sumsum to expected value
+  long int avgsum=(sumsum+32)>>6; 
+  diff=sum-avgsum;
+  if (abs(diff)<avgsum>>10){      //adjust for small changes
+    sumsum=sumsum+sum-avgsum;
+    skip=0;
+  } else {
+    skip++;
+  }
+  if (skip>64){     // break off in case of prolonged skipping
+    sumsum=sum<<6;
+    skip=0;
+  }
 
+  // one permille change = 2 ticks/s
+  if (diff==0) flash_period=1000000;
+  else flash_period=avgsum/(2*abs(diff));    
 
+  return flash_period < 10;
 }
 
 
@@ -129,13 +133,15 @@ void setup() {
 
   Serial.begin(9600); // Begin serial
   while (!Serial); // Wait for serial
-  Wire.begin();
+  Wire.begin(); // Begin the wire connection on the SCL SDA pins
 
 
   mpx1.begin(); // Begin pin extendor
   mpx2.begin();
   mpx3.begin();
 
+
+  // Attach all the servos
   servos[0].attach(24);
   servos[1].attach(25);
 
@@ -154,17 +160,17 @@ void setup() {
   servos[10].attach(32);
   servos[11].attach(33);
 
+  // Set all the servos to default.
   for (int i = 0; i< 12; i++) {
     servos[i].write(90);
   }
 
   lc.setup(servos, &mpx1, &mpx2, &mpx3); // Setup the pin extendor
 
-  //delay(1000);
   Serial.print(mpx1.isConnected());
   Serial.print(mpx2.isConnected());
   Serial.print(mpx3.isConnected());
-  Serial.println("Didn\'t fail pre boot."); // A quick it worked.
+  Serial.println("Didn\'t fail pre boot."); // A quick it worked message.
   
 
   // Begin lora on the correct wavelength, and print if it fails.
@@ -172,16 +178,68 @@ void setup() {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
-
-  ///// IGNORE
-
+  
+  // FOR DEBUGGING.
   WalkEvent e;
-  //SyncEvent b;
   lc.submitEvent(&e, false);
-  //lc.submitEvent(&b, false);
 }
 
 // Process steps every clock cycle.
 void loop() {
-  lc.procStep();
+  lc.procStep(); // Tell the control to process a step.
+
+  // If we detect a mine lets tell LoRa.
+  if (MetalDetect()) Logging::Info("+" + String(lc.currentPosition.x) + ":" + String(lc.currentPosition.y));
+
+
+  // Process a lora packet.
+  if (LoRa.parsePacket() > 0) {
+    
+    // Read basic packet information.
+    // See more about packet info in the events.h file.
+
+    byte recipient = LoRa.read();
+    byte sender = LoRa.read();
+    byte messageID = LoRa.read();
+
+    byte messageType = LoRa.read();
+
+    byte incomingLength = LoRa.read();
+
+    String incoming = "";
+
+
+    // Read from the LoRa serial.
+    while (LoRa.available()) {
+      incoming += (char)LoRa.read();
+    }
+
+    if (incomingLength != incoming.length()) { // Something went wrong ohno.
+      Logging::Warning("RESEND:" + String(messageID));
+      return;
+    }
+
+    if (recipient != Logging::MyAddress && recipient != Logging::ChannelAddress) return; // Oops we touched a bad packet.
+
+    if (messageType == 1) { // A create event packet
+
+      // The walk event
+      if (incoming == "WALK") {
+        WalkEvent tmp;
+        lc.submitEvent(&tmp, false);
+      }
+
+    } 
+
+    if (messageType == 2) { // Override create event
+
+      // The walk event
+      if (incoming == "WALK") {
+        WalkEvent tmp;
+        lc.submitEvent(&tmp, true);
+      }
+
+    }
+
+  }
 }
