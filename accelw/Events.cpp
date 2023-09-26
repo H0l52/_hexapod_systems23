@@ -38,15 +38,6 @@ int Logging::msgCount = 0;
   legs[1].o_xy.moveTo(300);
 */
 
-inline void SetUpMotors(Leg *l) {
-  int Speed = 400; 
-  for (int i = 0; i < 6; i++) {
-    l[i].o_xy.setSpeed(Speed);
-    l[i].o_xy.setMaxSpeed(Speed);
-    l[i].o_xy.setAcceleration(Speed);
-  }
-}
-
 inline void Raise(Leg *l, int index) {
   int moveAmount = 100; 
 
@@ -54,7 +45,9 @@ inline void Raise(Leg *l, int index) {
 
   int directionCoeff = RHS ? -1 : 1;
   moveAmount *= directionCoeff;
-  int servoAmount = RHS ? 70 : 110;
+
+  int diff = 30;
+  int servoAmount = RHS ? 90 - diff : 90 + diff;
 
   l->h_z.write(servoAmount);
   l->o_z.write(servoAmount);
@@ -84,7 +77,7 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   // Left middle = 4
   // Left back = 5
 
-  unsigned long timeCoeff = 10000 / 2;
+  unsigned long timeCoeff = 200;
   
   int moveAmount = 100;
   int Speed = 400;  
@@ -97,13 +90,24 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   if (this->Stage(0)) {
     Logging::Info("DEBUG STAGE");
 
-    SetUpMotors(legs);
+    for (int i = 0; i < 6; i++) {
+      legs[i].o_xy.setSpeed(Speed);
+      legs[i].o_xy.setMaxSpeed(Speed);
+      legs[i].o_xy.setAcceleration(Speed);
+    }
 
-    legs[1].h_z.write(70);
-    legs[1].o_z.write(70);
-    legs[1].o_xy.moveTo(-moveAmount);
+    // legs[1].h_z.write(70);
+    // legs[1].o_z.write(70);
+    // legs[1].o_xy.moveTo(-moveAmount);
 
-    this->timeout = 100000;
+    Raise(&legs[1],1);
+    ReturnBack(&legs[4],4);
+    Drop(&legs[0]);
+    Raise(&legs[3],3);
+    ReturnBack(&legs[2],2);
+    ReturnBack(&legs[5],5);
+
+    this->timeout = 50000;
   }
 
   if (this->Stage(1)) {
