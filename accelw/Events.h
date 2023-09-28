@@ -214,6 +214,15 @@ class SyncEvent : public Event {
 
 
 
+class TestEvent : public Event {
+  public:
+    TestEvent() : Event(3) {
+    };
+    int Proc(Leg legs[6], vector2D position);
+};
+
+
+
 
 
 

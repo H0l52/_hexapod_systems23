@@ -37,41 +37,50 @@ int Logging::msgCount = 0;
   legs[1].o_xy.setAcceleration(400);
   legs[1].o_xy.moveTo(300);
 */
+const int Speed = 100;
 
 inline void Raise(Leg *l, int index) {
-  int moveAmount = 100; 
+  int moveAmount = 50; 
 
   bool RHS = index < 3;
 
   int directionCoeff = RHS ? -1 : 1;
   moveAmount *= directionCoeff;
 
-  int servoAmount = RHS ? 30 : 150;
+  int servoAmount = RHS ? 40 : 140;
   int servoAmoun2 = RHS ? 40 : 140;
 
   l->h_z.write(servoAmount);
   l->o_z.write(servoAmoun2);
 
+  l->o_xy.setMaxSpeed(Speed);
+  l->o_xy.setSpeed(Speed);
+  l->o_xy.setAcceleration(Speed);
+
   l->o_xy.moveTo(moveAmount);
 }
 
 inline void Drop(Leg *l, int index, bool move =true) {
-  int moveAmount = 100;
+  int moveAmount = 50;
   bool RHS = index < 3;
   int directionCoeff = RHS ? 1 : -1;
   moveAmount *= directionCoeff;
 
-  int servoAmount = RHS ? 70 : 120;
-  int servoAmoun2 = RHS ? 80 : 110;
+  int servoAmount = RHS ? 75 : 105;
+  int servoAmoun2 = RHS ? 80 : 100;
 
   l->h_z.write(servoAmount);
   l->o_z.write(servoAmoun2);
 
-  //if (move) l->o_xy.moveTo(moveAmount);
+  l->o_xy.setMaxSpeed(Speed/2);
+  l->o_xy.setSpeed(Speed/2);
+  l->o_xy.setAcceleration(Speed/2);
 
-  delay(500);
+  if (move) l->o_xy.moveTo(moveAmount);
+
+  delay(600);
 }
-
+  
 int WalkEvent::Proc(Leg *legs, vector2D position) {
 
   // Right front - 2
@@ -81,12 +90,12 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   // Left middle = 4
   // Left back = 5
 
-  unsigned long timeCoeff = 60000;
+  unsigned long timeCoeff = 9500;
   unsigned long LargeTimeCoeff = timeCoeff;
 
   static bool firstPass[] = {false, false, false, false, false, false};
 
-  int Speed = 100;  
+  
 
   if(this->stage == -1) return 0;
   //Serial.println(this->timeout);
@@ -175,18 +184,18 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   }
 
   if (this->Stage(7)) {
-    // /this->timeout = 100;
-    if (firstPass[2]) Drop(&legs[2],2);
-    for (int i = 0; i < 6; i++) {
-      int mv = (i < 3) ? 100 : -100;
+    this->timeout = 100;
+    // if (firstPass[2]) Drop(&legs[2],2);
+    // for (int i = 0; i < 6; i++) {
+    //   int mv = (i < 3) ? 100 : -100;
 
-      legs[i].o_xy.setMaxSpeed(Speed);
-      legs[i].o_xy.setSpeed(Speed);
-      legs[i].o_xy.setAcceleration(Speed);
-      legs[i].o_xy.moveTo(mv); 
-    }
+    //   legs[i].o_xy.setMaxSpeed(Speed);
+    //   legs[i].o_xy.setSpeed(Speed);
+    //   legs[i].o_xy.setAcceleration(Speed);
+    //   legs[i].o_xy.moveTo(mv); 
+    // }
 
-    this->timeout = timeCoeff*1.5;
+    // this->timeout = timeCoeff*1.5;
   }
   if (this->Stage(8)) {
     this->timeout = 100;
@@ -207,7 +216,7 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
 
   // Waits for next stage
   if (this->StageWait()) return 0;
-  if (this->stage == 9) {this->stage = 0; this->timeout=0;}
+  if (this->stage == 9) {this->stage = 1; this->timeout=0;}
   this->End(9);
   return 0;
 }
@@ -240,5 +249,35 @@ int SyncEvent::Proc(Leg *legs, vector2D position){
 
   if (this->StageWait()) return 0;
   this->End(6);
+  return 0;
+}
+
+int TestEvent::Proc(Leg *legs, vector2D position) {
+  if (this->Stage(0)) {
+    for (int i =0; i<6; i++) {
+      legs[i].o_z.write((i<3)?0:160);
+      legs[i].h_z.write((i<3)?180:0);
+      // legs[i].o_xy.setAcceleration(100);
+      // legs[i].o_xy.setMaxSpeed(100);
+      // legs[i].o_xy.setSpeed(100);
+      
+      //legs[i].o_xy.moveTo((i<3) ? -100: 100);
+    }
+    this->timeout = 10000;
+  }
+  if (this->Stage(1)) {
+    for (int i =0; i<6; i++) {
+      //legs[i].o_xy.moveTo((i<3) ? 100: -100);
+      legs[i].o_z.write(90);
+      legs[i].h_z.write(90);
+      //legs[i].h_z.write((i<3)?180:0);
+    }
+    this->timeout = 10000;
+  }
+
+  if (this->MidStage(0) || this->MidStage(1) ) this->timeout -=1;
+  if (this->StageWait()) return 0;
+  if (this->stage == 2) {this->stage = 0; this->timeout = 0;}
+  this->End(2);
   return 0;
 }

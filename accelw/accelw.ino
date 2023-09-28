@@ -120,8 +120,8 @@ bool MetalDetect() {
   // one permille change = 2 ticks/s
   if (diff==0) flash_period=1000000;
   else flash_period=avgsum/(2*abs(diff));    
-
-  return flash_period < 10;
+  //Serial.println(flash_period);
+  return diff > 200;
 }
 
 
@@ -130,6 +130,9 @@ bool MetalDetect() {
 
 /// Start LoRa and Serial.
 void setup() {
+  pinMode(pin_pulse, OUTPUT); 
+  digitalWrite(pin_pulse, LOW);
+  pinMode(pin_cap, INPUT);  
 
   Serial.begin(9600); // Begin serial
   while (!Serial); // Wait for serial
@@ -175,8 +178,8 @@ void setup() {
 
   // Begin lora on the correct wavelength, and print if it fails.
   if (!LoRa.begin(915E6)) {
-    Serial.println("Starting LoRa failed!");
-    while (1);
+   Serial.println("Starting LoRa failed!");
+   while (1);
   }
   
   // FOR DEBUGGING.
@@ -188,10 +191,10 @@ void setup() {
 void loop() {
   lc.procStep(); // Tell the control to process a step.
 
-  /*
-  // If we detect a mine lets tell LoRa.
-  if (MetalDetect()) Logging::Info("+" + String(lc.currentPosition.x) + ":" + String(lc.currentPosition.y));
   
+  // If we detect a mine lets tell LoRa.
+  //if (MetalDetect()) Serial.println("mine");//Logging::Info("+" + String(lc.currentPosition.x) + ":" + String(lc.currentPosition.y));
+  //Serial.println("oop");
 
   // Process a lora packet.
   if (LoRa.parsePacket() > 0) {
@@ -243,5 +246,5 @@ void loop() {
     }
 
   }
-  */
+  
 }
