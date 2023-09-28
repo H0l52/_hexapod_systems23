@@ -187,7 +187,7 @@ class Event {
     static void runMotors(Leg legs[6]) {
       for (int i = 0; i < 6; i++) {
         // Run each legs stepper motor.
-        legs[i].o_xy.run();
+        legs[i].o_xy.runSpeedToPosition();
       }
     } 
 

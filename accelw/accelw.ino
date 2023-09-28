@@ -191,7 +191,7 @@ void loop() {
   /*
   // If we detect a mine lets tell LoRa.
   if (MetalDetect()) Logging::Info("+" + String(lc.currentPosition.x) + ":" + String(lc.currentPosition.y));
-  */
+  
 
   // Process a lora packet.
   if (LoRa.parsePacket() > 0) {
@@ -243,4 +243,5 @@ void loop() {
     }
 
   }
+  */
 }

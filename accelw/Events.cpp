@@ -46,26 +46,30 @@ inline void Raise(Leg *l, int index) {
   int directionCoeff = RHS ? -1 : 1;
   moveAmount *= directionCoeff;
 
-  int diff = 30;
-  int servoAmount = RHS ? 90 - diff : 90 + diff;
+  int servoAmount = RHS ? 40 : 140;
+  int servoAmoun2 = RHS ? 40 : 140;
 
   l->h_z.write(servoAmount);
-  l->o_z.write(servoAmount);
+  l->o_z.write(servoAmoun2);
 
   l->o_xy.moveTo(moveAmount);
 }
 
-inline void Drop(Leg *l) {
-  l->h_z.write(90);
-  l->o_z.write(90);
-}
-
-inline void ReturnBack(Leg *l, int index) {
+inline void Drop(Leg *l, int index, bool move =true) {
   int moveAmount = 100;
   bool RHS = index < 3;
   int directionCoeff = RHS ? 1 : -1;
   moveAmount *= directionCoeff;
-  l->o_xy.moveTo(moveAmount);
+
+  int servoAmount = RHS ? 70 : 120;
+  int servoAmoun2 = RHS ? 80 : 110;
+
+  l->h_z.write(servoAmount);
+  l->o_z.write(servoAmoun2);
+
+  if (move) l->o_xy.moveTo(moveAmount);
+
+  if (move) delay(500);
 }
 
 int WalkEvent::Proc(Leg *legs, vector2D position) {
@@ -77,10 +81,12 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   // Left middle = 4
   // Left back = 5
 
-  unsigned long timeCoeff = 200;
-  
-  int moveAmount = 100;
-  int Speed = 400;  
+  unsigned long timeCoeff = 30000;
+  unsigned long LargeTimeCoeff = timeCoeff;
+
+  static bool firstPass[] = {false, false, false, false, false, false};
+
+  int Speed = 600;  
 
   if(this->stage == -1) return 0;
   //Serial.println(this->timeout);
@@ -91,119 +97,69 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
     Logging::Info("DEBUG STAGE");
 
     for (int i = 0; i < 6; i++) {
-      legs[i].o_xy.setSpeed(Speed);
       legs[i].o_xy.setMaxSpeed(Speed);
+      legs[i].o_xy.setSpeed(Speed);
       legs[i].o_xy.setAcceleration(Speed);
+      legs[i].o_xy.moveTo(100);
+
+      Drop(&legs[i],i);
     }
 
-    // legs[1].h_z.write(70);
-    // legs[1].o_z.write(70);
-    // legs[1].o_xy.moveTo(-moveAmount);
-
-    Raise(&legs[1],1);
-    ReturnBack(&legs[4],4);
-    Drop(&legs[0]);
-    Raise(&legs[3],3);
-    ReturnBack(&legs[2],2);
-    ReturnBack(&legs[5],5);
-
-    this->timeout = 50000;
+    this->timeout = 50000;// * 1000000;
   }
 
   if (this->Stage(1)) {
     Logging::Info("Stage 1");
-    // RF back
-    // RM mid move
-    // RB return back
-    // LF drop
-    // LM back
-    // LB raise
-
-    ReturnBack(&legs[0],0);
-    Drop(&legs[3]);
-    Raise(&legs[5],5);
-
-    this->timeout = timeCoeff;
+    this->timeout = LargeTimeCoeff;
+    
+    if (firstPass[3]) Drop(&legs[3],3);
+    Raise(&legs[2],2);
+    firstPass[3] = true;
   }
 
   if (this->Stage(2)) {
     Logging::Info("Stage 2");
-
-    // RF raise
-    // RM drop
-    // RB back
-    // LF Return back
-    // LM back
-    // LB move
-
-    Raise(&legs[2],2);
-    Drop(&legs[1]);
-    ReturnBack(&legs[3],3);
-
-
     this->timeout = timeCoeff;
+
+    if (firstPass[1]) Drop(&legs[1],1);
+    Raise(&legs[4],4);
+    firstPass[1] = true;
   }
 
   if (this->Stage(3)) {
     Logging::Info("Stage 3");
+    this->timeout = LargeTimeCoeff;
 
-    // RM back
-    // LM raise
-    // LB drop
-
-    ReturnBack(&legs[1],1);
-    Raise(&legs[4],4);
-    Drop(&legs[5]);
-
-    this->timeout = timeCoeff;
+    if (firstPass[5]) Drop(&legs[5],5);
+    Raise(&legs[0],0);
+    firstPass[5] = true;
   }
 
   if (this->Stage(4)) {
     Logging::Info("Stage 4");
-
-    // RM back
-    // LM move
-
-    // RF drop
-    // RB Raise
-    // LB return back
-
-    Drop(&legs[2]);
-    Raise(&legs[0],0);
-    ReturnBack(&legs[5],5);
-    
-
     this->timeout = timeCoeff;
+
+    Drop(&legs[2],2);
+    Raise(&legs[3],3);
+    firstPass[2] = true;
   }
 
   if (this->Stage(5)) {
     Logging::Info("Stage 5");
+    this->timeout = LargeTimeCoeff;
 
-    // RM back
-    // LM drop
-
-    // RF return back
-    // LF raise
-
-    ReturnBack(&legs[2],2);
-    Drop(&legs[4]);
-    Raise(&legs[3],3);
-
-    this->timeout = timeCoeff;
+    Drop(&legs[4],4);  
+    Raise(&legs[1],1);
+    firstPass[4] = true;
   }
 
   if (this->Stage(6)) {
     Logging::Info("Stage 6");
-    
-    // RM Raise
-    // LM back
-    Raise(&legs[1],1);
-    ReturnBack(&legs[4],4);
-
-    // RB drop
-    Drop(&legs[0]);
-
     this->timeout = timeCoeff;
+    
+    Drop(&legs[0],0);
+    Raise(&legs[5],5);
+    firstPass[0] = true;
   }
 
 
@@ -214,7 +170,8 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   // Interpolate from infinity down to 0 (when stage wait will call).
   if (this->timeout != 0) {
     this->timeout -= 1;
-    //if(this->timeout % 1000 == 0 ) Serial.println(this->timeout);
+    //if(this->timeout % 1000 == 0 && this->stage != 0) Serial.println(firstPass);
+    //if(this->timeout % 100 == 0 && this->stage != 0) Serial.println(this->timeout);
     //Logging::Info(this->timeout);
     if (this->timeout == 0) Logging::Info("Timedout");
   }
@@ -230,10 +187,13 @@ int SyncEvent::Proc(Leg *legs, vector2D position){
 
   for (int i = 0; i< 6; i++) {
     if (this->Stage(i)) {
-      int hval = (i < 3 ) ? 180 : 0;
-      legs[i].o_xy.setAcceleration(300);
-      legs[i].o_xy.setMaxSpeed(300);
-      legs[i].o_xy.move(100);
+      int hval = (i < 3 ) ? 140 : 70;
+      int speed = 900;
+      legs[i].o_xy.setMaxSpeed(speed);
+      legs[i].o_xy.setSpeed(speed);
+      legs[i].o_xy.setAcceleration(speed);
+      
+      legs[i].o_xy.moveTo(200);
 
       legs[i].h_z.write(hval);
       legs[i].o_z.write(hval);
