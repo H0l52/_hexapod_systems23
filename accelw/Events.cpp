@@ -40,7 +40,7 @@ int Logging::msgCount = 0;
 const int Speed = 100;
 
 inline void Raise(Leg *l, int index) {
-  int moveAmount = 50; 
+  int moveAmount = 100; 
 
   bool RHS = index < 3;
 
@@ -55,30 +55,34 @@ inline void Raise(Leg *l, int index) {
 
   l->o_xy.setMaxSpeed(Speed);
   l->o_xy.setSpeed(Speed);
-  l->o_xy.setAcceleration(Speed);
+  l->o_xy.setAcceleration(Speed*4);
 
-  l->o_xy.moveTo(moveAmount);
+  l->o_xy.move(moveAmount);
 }
 
 inline void Drop(Leg *l, int index, bool move =true) {
-  int moveAmount = 50;
+  int moveAmount = 100 * 3;
   bool RHS = index < 3;
-  int directionCoeff = RHS ? 1 : -1;
+  int directionCoeff = RHS ? 2 : -1;//2.8 : -0.9;
   moveAmount *= directionCoeff;
 
   int servoAmount = RHS ? 75 : 105;
   int servoAmoun2 = RHS ? 80 : 100;
 
+  int speedCoeff = abs(directionCoeff);
+
   l->h_z.write(servoAmount);
   l->o_z.write(servoAmoun2);
 
-  l->o_xy.setMaxSpeed(Speed/2);
-  l->o_xy.setSpeed(Speed/2);
-  l->o_xy.setAcceleration(Speed/2);
 
-  if (move) l->o_xy.moveTo(moveAmount);
+  int localSpeed = RHS ? Speed/6 : Speed/6;
+  l->o_xy.setMaxSpeed(localSpeed);
+  l->o_xy.setSpeed(localSpeed);
+  l->o_xy.setAcceleration(Speed);
 
-  delay(600);
+  if (move) l->o_xy.move(moveAmount);
+
+  delay(200);
 }
   
 int WalkEvent::Proc(Leg *legs, vector2D position) {
