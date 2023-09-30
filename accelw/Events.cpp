@@ -40,7 +40,7 @@ int Logging::msgCount = 0;
 const int Speed = 100;
 
 inline void Raise(Leg *l, int index) {
-  int moveAmount = 100; 
+  int moveAmount = (index == 3 || index == 2) ? 100 : 100; 
 
   bool RHS = index < 3;
 
@@ -61,21 +61,20 @@ inline void Raise(Leg *l, int index) {
 }
 
 inline void Drop(Leg *l, int index, bool move =true) {
-  int moveAmount = 100 * 3;
   bool RHS = index < 3;
-  int directionCoeff = RHS ? 2 : -1;//2.8 : -0.9;
+  int moveAmount = RHS ? 600:150;//600 : 200; //600, 200
+  
+  int directionCoeff = RHS ? 1 : -1;
   moveAmount *= directionCoeff;
 
   int servoAmount = RHS ? 75 : 105;
   int servoAmoun2 = RHS ? 80 : 100;
 
-  int speedCoeff = abs(directionCoeff);
-
   l->h_z.write(servoAmount);
   l->o_z.write(servoAmoun2);
 
 
-  int localSpeed = RHS ? Speed/6 : Speed/6;
+  int localSpeed = RHS ? Speed/4 : Speed/2;
   l->o_xy.setMaxSpeed(localSpeed);
   l->o_xy.setSpeed(localSpeed);
   l->o_xy.setAcceleration(Speed);
@@ -94,7 +93,7 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   // Left middle = 4
   // Left back = 5
 
-  unsigned long timeCoeff = 9500;
+  unsigned long timeCoeff = 8000;
   unsigned long LargeTimeCoeff = timeCoeff;
 
   static bool firstPass[] = {false, false, false, false, false, false};
@@ -187,23 +186,6 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
     firstPass[1] = true;
   }
 
-  if (this->Stage(7)) {
-    this->timeout = 100;
-    // if (firstPass[2]) Drop(&legs[2],2);
-    // for (int i = 0; i < 6; i++) {
-    //   int mv = (i < 3) ? 100 : -100;
-
-    //   legs[i].o_xy.setMaxSpeed(Speed);
-    //   legs[i].o_xy.setSpeed(Speed);
-    //   legs[i].o_xy.setAcceleration(Speed);
-    //   legs[i].o_xy.moveTo(mv); 
-    // }
-
-    // this->timeout = timeCoeff*1.5;
-  }
-  if (this->Stage(8)) {
-    this->timeout = 100;
-  }
 
 
 
@@ -220,8 +202,8 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
 
   // Waits for next stage
   if (this->StageWait()) return 0;
-  if (this->stage == 9) {this->stage = 1; this->timeout=0;}
-  this->End(9);
+  if (this->stage == 7) {this->stage = 1; this->timeout=0;}
+  this->End(7);
   return 0;
 }
 
