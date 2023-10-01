@@ -58,7 +58,7 @@ inline void Drop(Leg *l, int index, bool move =true) {
   bool RHS = index < 3;
   int moveAmount = 90;//600 : 200; //600, 200
 
-  int servoAmount = RHS ? 70 : 110;
+  int servoAmount = RHS ? 75 : 105;
   int servoAmoun2 = RHS ? 80 : 100;
 
   l->h_z.write(servoAmount);
@@ -79,7 +79,7 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   // Left middle = 4
   // Left back = 5
 
-  unsigned long timeCoeff = 6000;
+  unsigned long timeCoeff = 4000;
   unsigned long LargeTimeCoeff = timeCoeff;
 
   static bool firstPass[] = {false, false, false, false, false, false};
@@ -106,21 +106,21 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
     Logging::Info("Stage 1");
     this->timeout = LargeTimeCoeff;
     
-    if (firstPass[3]) Drop(&legs[3],3);
-    Raise(&legs[2],2);
+    if (firstPass[2]) Drop(&legs[2],2);
+    Raise(&legs[5],5);
 
     firstPass[2] = true;
-    firstPass[3] = true;
+    firstPass[5] = true;
   }
 
   if (this->Stage(2)) {
     Logging::Info("Stage 2");
     this->timeout = timeCoeff;
 
-    if (firstPass[1]) Drop(&legs[1],1);
+    if (firstPass[5]) Drop(&legs[5],5);
     Raise(&legs[4],4);
 
-    firstPass[1] = true;
+    firstPass[5] = true;
     firstPass[4] = true;
   }
 
@@ -128,21 +128,21 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
     Logging::Info("Stage 3");
     this->timeout = LargeTimeCoeff;
 
-    if (firstPass[5]) Drop(&legs[5],5);
-    Raise(&legs[0],0);
+    if (firstPass[4]) Drop(&legs[4],4);
+    Raise(&legs[3],3);
 
-    firstPass[5] = true;
-    firstPass[0] = true;
+    firstPass[4] = true;
+    firstPass[3] = true;
   }
 
   if (this->Stage(4)) {
     Logging::Info("Stage 4");
     this->timeout = timeCoeff;
 
-    if (firstPass[2]) Drop(&legs[2],2);
-    Raise(&legs[3],3);
+    if (firstPass[3]) Drop(&legs[3],3);
+    Raise(&legs[0],0);
 
-    firstPass[2] = true;
+    firstPass[0] = true;
     firstPass[3] = true;
   }
 
@@ -150,22 +150,22 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
     Logging::Info("Stage 5");
     this->timeout = LargeTimeCoeff;
 
-    if (firstPass[4]) Drop(&legs[4],4);  
+    if (firstPass[0]) Drop(&legs[0],0);  
     Raise(&legs[1],1);
 
     firstPass[1] = true;
-    firstPass[4] = true;
+    firstPass[0] = true;
   }
 
   if (this->Stage(6)) {
     Logging::Info("Stage 6");
     this->timeout = timeCoeff;
     
-    if (firstPass[0]) Drop(&legs[0],0);
-    Raise(&legs[5],5);
+    if (firstPass[1]) Drop(&legs[1],1);
+    Raise(&legs[2],2);
 
-    firstPass[0] = true;
-    firstPass[5] = true;
+    firstPass[2] = true;
+    firstPass[1] = true;
   }
 
 
