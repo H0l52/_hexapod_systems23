@@ -77,11 +77,11 @@ struct Leg {
 struct vector2D {
   
   // Structure initializer.
-  int x;
-  int y;
+  volatile int x;
+  volatile int y;
   
   vector2D(int a=0, int b=0) {
-    x = a; y = b;
+    this->x = a; this->y = b;
   };
 
   // The size of the vector compared to another - (basically pythag diff)
@@ -101,6 +101,11 @@ struct vector2D {
     int len = this->length();
     this->x /= len;
     this->y /= len;
+  }
+
+  String toString() {
+    String s = this->x + ":" + this->y;
+    return s;
   }
 };
 

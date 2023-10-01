@@ -3,36 +3,34 @@
 #include "LegControl.h"
 #include <SPI.h>
 #include <LoRa.h>
-// #include "MCP23008.h"
-// #include "Wire.h"
 #include <Servo.h>
 
 // Initiate the data structures
 LegControl lc(0);
-
-// MCP23008 mpx1(0x20);
-// MCP23008 mpx2(0x21);
-// MCP23008 mpx3(0x22);
-
 Servo servos[18];
 
 ///
 /// METAL DETECTOR
+/// Code partially taken from https://www.instructables.com/Simple-Arduino-Metal-Detector/
 ///
-///
-const byte npulse = 3; // number of pulses
-const byte pin_pulse=A0; // pins on the ardduino
-const byte pin_cap  =A1;
+const byte NumberOfPulses = 3; // number of pulses
+const byte PulsePin =A0; // pins on the ardduino
+const byte CapacitorPin  =A1;
 
-const int nmeas=256;  //measurements to take
-long int sumsum=0; //running sum of 64 sums 
-long int skip=0;   //number of skipped sums
-long int diff=0;        //difference between sum and avgsum
-long int flash_period=0;//period (in ms) 
-long unsigned int prev_flash=0; //time stamp of previous flash
+const int NumberOfMeasurements=256;  //measurements to take
+long int SumOf64=0; //running sum of 64 sums 
+long int NumberOfSkippedSums=0; //number of skipped sums
+long int DifferenceInAvgSum=0; //difference between sum and avgsum
 
+long unsigned int LastDetect = 0;
+long unsigned int hVal = 0;
+int averageOfAverages = 0;
+int avCount = 0;
 
 bool MetalDetect() {
+  long unsigned int ts=millis();
+  if (ts < LastDetect + 200) return false;
+  LastDetect = ts;
   // Store mins and maxs of Analog data input
   int minval=1023;
   int maxval=0;
@@ -41,63 +39,68 @@ bool MetalDetect() {
   long unsigned int sum=0;
 
 
-  for (int imeas=0; imeas<nmeas+2; imeas++){
+  for (int imeas=0; imeas<NumberOfMeasurements+2; imeas++){
+    long unsigned int timestamp=millis();
+
     //reset the capacitor
-    pinMode(pin_cap,OUTPUT);
-    digitalWrite(pin_cap,LOW);
+    pinMode(CapacitorPin,OUTPUT);
+
+
+    // cleanse capacitor
+    digitalWrite(CapacitorPin,LOW);
     delayMicroseconds(20);
-    pinMode(pin_cap,INPUT);
-    //apply pulses
-    for (int ipulse = 0; ipulse < npulse; ipulse++) {
-      digitalWrite(pin_pulse,HIGH); //takes 3.5 microseconds
+
+    // turn capcitor back to normal
+    pinMode(CapacitorPin,INPUT);
+
+    // pulse the metal detector
+    for (int ipulse = 0; ipulse < NumberOfPulses; ipulse++) {
+      digitalWrite(PulsePin,HIGH);
       delayMicroseconds(3);
-      digitalWrite(pin_pulse,LOW);  //takes 3.5 microseconds
+      digitalWrite(PulsePin,LOW); 
       delayMicroseconds(3);
     }
-    //read the charge on the capacitor
-    int val = analogRead(pin_cap); //takes 13x8=104 microseconds
+
+    //read the changes on the capacitor
+    int val = analogRead(CapacitorPin);
+
+    // find the mins and maxs
     minval = min(val,minval);
     maxval = max(val,maxval);
     sum+=val;
- 
-    //determine if LEDs should be on or off
-    long unsigned int timestamp=millis();
-    byte ledstat=0;
-    if (timestamp<prev_flash+10){
-      if (diff>0)ledstat=1;
-      if (diff<0)ledstat=2;
-    }
-    if (timestamp>prev_flash+flash_period){
-      if (diff>0)ledstat=1;
-      if (diff<0)ledstat=2;
-      prev_flash=timestamp;   
-    }
-    if (flash_period>1000)ledstat=0;
   
   }
   //subtract minimum and maximum value to remove spikes
   sum-=minval; sum-=maxval;
   
   //process
-  if (sumsum==0) sumsum=sum<<6; //set sumsum to expected value
-  long int avgsum=(sumsum+32)>>6; 
-  diff=sum-avgsum;
-  if (abs(diff)<avgsum>>10){      //adjust for small changes
-    sumsum=sumsum+sum-avgsum;
-    skip=0;
+  if (SumOf64==0) SumOf64=sum<<6; //back bitshift sum, and set sumsum to expected value
+  long int avgsum=(SumOf64+32)>>6;  // bitshift average the sum with some hacky math.
+  DifferenceInAvgSum=sum-avgsum; // find the average sum difference
+  if (abs(DifferenceInAvgSum)<avgsum>>10){      //adjust for small changes
+    SumOf64=SumOf64+sum-avgsum; //this is fancy math that removes spikes
+    NumberOfSkippedSums=0;
   } else {
-    skip++;
+    NumberOfSkippedSums++; // this indicates if we have skipped a reading.
   }
-  if (skip>64){     // break off in case of prolonged skipping
-    sumsum=sum<<6;
-    skip=0;
+  if (NumberOfSkippedSums>64){     // break off in case of prolonged skipping
+    SumOf64=sum<<6;
+    NumberOfSkippedSums=0;
   }
+  
+  // Timing based average system to remove errors - will still show a few false positives,
+  // but no wehre near as many.
 
-  // one permille change = 2 ticks/s
-  if (diff==0) flash_period=1000000;
-  else flash_period=avgsum/(2*abs(diff));    
-  //Serial.println(flash_period);
-  return diff > 200;
+  if (millis() > hVal + 1000) {
+    hVal = millis();
+    averageOfAverages = 0;
+    avCount = 0;
+  } 
+  averageOfAverages += avgsum/(2*abs(DifferenceInAvgSum)); 
+  avCount++;
+
+  // return a mine only if the average is less than 80. This should be tuned to the environment.
+  return ((averageOfAverages/avCount) < 80);
 }
 
 
@@ -132,37 +135,27 @@ void setup() {
   servos[16].attach(36);
   servos[17].attach(38);
 
-  pinMode(pin_pulse, OUTPUT); 
-  digitalWrite(pin_pulse, LOW);
-  pinMode(pin_cap, INPUT);  
+  pinMode(PulsePin, OUTPUT); 
+  digitalWrite(PulsePin, LOW);
+  pinMode(CapacitorPin, INPUT);  
 
   Serial.begin(9600); // Begin serial
   while (!Serial); // Wait for serial
-  //Wire.begin(); // Begin the wire connection on the SCL SDA pins
-
-
-  // mpx1.begin(); // Begin pin extendor
-  // mpx2.begin();
-  // mpx3.begin();
 
   // Set all the servos to default.
   for (int i = 0; i< 18; i++) {
     servos[i].write(90);
   }
 
-  lc.setup(servos);//, &mpx1, &mpx2, &mpx3); // Setup the pin extendor
-
-  // Serial.print(mpx1.isConnected());
-  // Serial.print(mpx2.isConnected());
-  // Serial.print(mpx3.isConnected());
-  // Serial.println("Didn\'t fail pre boot."); // A quick it worked message.
-  
+  lc.setup(servos); // Setup the servos
 
   // Begin lora on the correct wavelength, and print if it fails.
   if (!LoRa.begin(915E6)) {
    Serial.println("Starting LoRa failed!");
    while (1);
   }
+
+  Logging::Info("AWOKEN");
   
   // FOR DEBUGGING.
   WalkEvent e;
@@ -170,14 +163,14 @@ void setup() {
   lc.submitEvent(&e, false);
 }
 
+
 // Process steps every clock cycle.
 void loop() {
   lc.procStep(); // Tell the control to process a step.
 
   
   // If we detect a mine lets tell LoRa.
-  //if (MetalDetect()) Serial.println("mine");//Logging::Info("+" + String(lc.currentPosition.x) + ":" + String(lc.currentPosition.y));
-  //Serial.println("oop");
+  if (MetalDetect()) Serial.println("mine");//Logging::Info("mine" + lc.currentPosition.toString());
 
   // Process a lora packet.
   if (LoRa.parsePacket() > 0) {
