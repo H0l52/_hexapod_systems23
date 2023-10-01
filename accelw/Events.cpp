@@ -40,7 +40,7 @@ int Logging::msgCount = 0;
 const int Speed = 100;
 
 inline void Raise(Leg *l, int index) {
-  return;
+  //return;
   bool RHS = index < 3;
   int moveAmount = RHS ? 100 : 80; 
 
@@ -56,7 +56,7 @@ inline void Raise(Leg *l, int index) {
 }
 
 inline void Drop(Leg *l, int index) {
-  return;
+  //return;
   bool RHS = index < 3;
   int moveAmount = 90;//600 : 200; //600, 200
 
