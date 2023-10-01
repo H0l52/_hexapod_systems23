@@ -3,42 +3,18 @@
 #include "LegControl.h"
 #include <SPI.h>
 #include <LoRa.h>
-#include "MCP23008.h"
-#include "Wire.h"
-/// Initialises motors.
-///
-/// Motors are defined as follows
-/// 1 line per leg
-///
-/// Motor Index : Use
-/// 0           : Origin/X-Y Hip.
-/// 1           : Z Hip.
-/// 2           : Z Knee.
-///
-/// Motor schema (For Oukeda):
-/// pin1, pin3, pin2, pin4
-/// libpin1, libpin2, libpin3, libpin4
-///
-
-/// LegSchema:
-/// StepperMotor, Servo Base, Servo Foot
-int legss[36] = {
-    0, 1, 2, 3, 0,0,
-    0, 1, 2, 3, 0,0,
-    4, 5, 6, 7, 0,0,
-    4, 5, 6, 7, 0,0,
-    4, 5, 6, 7, 0,0,
-    0, 1, 2, 3, 0,0
-  };
+// #include "MCP23008.h"
+// #include "Wire.h"
+#include <Servo.h>
 
 // Initiate the data structures
-LegControl lc(legss);
+LegControl lc(0);
 
-MCP23008 mpx1(0x20);
-MCP23008 mpx2(0x21);
-MCP23008 mpx3(0x22);
+// MCP23008 mpx1(0x20);
+// MCP23008 mpx2(0x21);
+// MCP23008 mpx3(0x22);
 
-Servo servos[12];
+Servo servos[18];
 
 ///
 /// METAL DETECTOR
@@ -130,21 +106,7 @@ bool MetalDetect() {
 
 /// Start LoRa and Serial.
 void setup() {
-  pinMode(pin_pulse, OUTPUT); 
-  digitalWrite(pin_pulse, LOW);
-  pinMode(pin_cap, INPUT);  
-
-  Serial.begin(9600); // Begin serial
-  while (!Serial); // Wait for serial
-  Wire.begin(); // Begin the wire connection on the SCL SDA pins
-
-
-  mpx1.begin(); // Begin pin extendor
-  mpx2.begin();
-  mpx3.begin();
-
-
-  // Attach all the servos
+  //attach all the servos
   servos[0].attach(24);
   servos[1].attach(25);
 
@@ -163,17 +125,37 @@ void setup() {
   servos[10].attach(32);
   servos[11].attach(33);
 
+  servos[12].attach(39);
+  servos[13].attach(37);
+  servos[14].attach(35);
+  servos[15].attach(34);
+  servos[16].attach(36);
+  servos[17].attach(38);
+
+  pinMode(pin_pulse, OUTPUT); 
+  digitalWrite(pin_pulse, LOW);
+  pinMode(pin_cap, INPUT);  
+
+  Serial.begin(9600); // Begin serial
+  while (!Serial); // Wait for serial
+  //Wire.begin(); // Begin the wire connection on the SCL SDA pins
+
+
+  // mpx1.begin(); // Begin pin extendor
+  // mpx2.begin();
+  // mpx3.begin();
+
   // Set all the servos to default.
-  for (int i = 0; i< 12; i++) {
+  for (int i = 0; i< 18; i++) {
     servos[i].write(90);
   }
 
-  lc.setup(servos, &mpx1, &mpx2, &mpx3); // Setup the pin extendor
+  lc.setup(servos);//, &mpx1, &mpx2, &mpx3); // Setup the pin extendor
 
-  Serial.print(mpx1.isConnected());
-  Serial.print(mpx2.isConnected());
-  Serial.print(mpx3.isConnected());
-  Serial.println("Didn\'t fail pre boot."); // A quick it worked message.
+  // Serial.print(mpx1.isConnected());
+  // Serial.print(mpx2.isConnected());
+  // Serial.print(mpx3.isConnected());
+  // Serial.println("Didn\'t fail pre boot."); // A quick it worked message.
   
 
   // Begin lora on the correct wavelength, and print if it fails.
@@ -184,6 +166,7 @@ void setup() {
   
   // FOR DEBUGGING.
   WalkEvent e;
+  //delay(10000);
   lc.submitEvent(&e, false);
 }
 

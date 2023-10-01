@@ -4,25 +4,17 @@
 
 
 // Initialize the leg control system
-LegControl::LegControl(int *i) {
-  mlist = i;
-  for (uint8_t e = 0; e < 6; e++) {
-    uint8_t index = e * 6;
-    // Initialize each stepper motor
-    AccelStepper xy(AccelStepper::FULL4WIRE, mlist[index], mlist[index+2], mlist[index+1], mlist[index+3], true);
-
-    // Setup each leg structure (Servos are implicit)
-    Leg l;
-    l.o_xy = xy;
-
-    // Add to legs list
-    this->legs[this->leg_c++] = l;
-  }
+LegControl::LegControl(int i) {
+  // for (uint8_t e = 0; e < 6; e++) {
+  //   uint8_t index = e * 6;
+  //   Leg l;
+  //   this->legs[this->leg_c++] = l;
+  // }
 }
 
 /// Initialises all the motors,
 /// and returns the legcontrol class reference.
-void LegControl::setup(Servo *s, MCP23008* mp,MCP23008* mp2,MCP23008* mp3) {
+void LegControl::setup(Servo *s){//, MCP23008* mp,MCP23008* mp2,MCP23008* mp3) {
 
   // Connect the servos up to their respective lists
   for (int e = 0; e < 6; e++) {
@@ -30,20 +22,24 @@ void LegControl::setup(Servo *s, MCP23008* mp,MCP23008* mp2,MCP23008* mp3) {
     this->legs[e].h_z = s[(e*2)+1];
   }
 
+  for (int e = 12; e < 18; e++) {
+    this->legs[e-12].o_xy = s[e];
+  }
+
   this->currentPosition = vector2D(0, 0);
 
   // Connect all the mcp pin expandors to the right legs in the code.
-  this->legs[0].o_xy.mpcont = mp2;
-  this->legs[1].o_xy.mpcont = mp3;
-  this->legs[2].o_xy.mpcont = mp2;
-  this->legs[3].o_xy.mpcont = mp3;
-  this->legs[4].o_xy.mpcont = mp;
-  this->legs[5].o_xy.mpcont = mp;
+  // this->legs[0].o_xy.mpcont = mp2;
+  // this->legs[1].o_xy.mpcont = mp3;
+  // this->legs[2].o_xy.mpcont = mp2;
+  // this->legs[3].o_xy.mpcont = mp3;
+  // this->legs[4].o_xy.mpcont = mp;
+  // this->legs[5].o_xy.mpcont = mp;
 
   // Connect all the outputs 
-  for (int i = 0; i < 6; i++) {
-    this->legs[i].o_xy.enableOutputs();
-  }
+  // for (int i = 0; i < 6; i++) {
+  //   this->legs[i].o_xy.enableOutputs();
+  // }
 }
 
 
@@ -54,7 +50,7 @@ int LegControl::AttemptEventProc() {
   if (this->currentEvent == NULL) return 0;
 
   // If event, then we can first process the stepper motors
-  Event::runMotors(this->legs);
+  //Event::runMotors(this->legs);
 
   // Now we can process the event.
   return this->currentEvent->Proc(this->legs, this->currentPosition);

@@ -33,10 +33,10 @@ class LegControl {
     const static int MAXSIZE = 6;
     
     // The initiator for the class, takes a 6*6 2d array int input.
-    LegControl(int i[MAXSIZE*6]);
+    LegControl(int i);
 
     // Setup function for the MCP pin expander
-    void setup(Servo s[12], MCP23008* mp,MCP23008* mp2,MCP23008* mp3);
+    void setup(Servo s[18]);//, MCP23008* mp,MCP23008* mp2,MCP23008* mp3);
 
     // A generic process step function.
     void procStep();

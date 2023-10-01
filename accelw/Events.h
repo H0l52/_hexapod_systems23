@@ -68,7 +68,7 @@ class Logging {
 
 // Basic leg structure in memory - just makes it easy to access everything.
 struct Leg {
-  AccelStepper o_xy; // The Origin XY (Left/Right) stepper motor
+  Servo o_xy; // The Origin XY (Left/Right) stepper motor
   Servo o_z; // The origin Z (Up/Down) servo
   Servo h_z; // The hip Z (Up/Down) servo
 };
@@ -187,7 +187,7 @@ class Event {
     static void runMotors(Leg legs[6]) {
       for (int i = 0; i < 6; i++) {
         // Run each legs stepper motor.
-        legs[i].o_xy.run();
+        //legs[i].o_xy.run();
       }
     } 
 
