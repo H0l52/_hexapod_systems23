@@ -15,51 +15,31 @@ Event::Event(byte id) {
 // so i moved it here.
 int Logging::msgCount = 0;
 
-
-/*
-  ------- RAISE ------
-
-  legs[1].h_z.write(70);
-  legs[1].o_z.write(70);
-
-  legs[1].o_xy.setSpeed(400);
-  legs[1].o_xy.setMaxSpeed(400);
-  legs[1].o_xy.setAcceleration(400);
-  legs[1].o_xy.moveTo(-300);
-
-  ------- DROP ---------
-  legs[1].h_z.write(90);
-  legs[1].o_z.write(90);
-
-  ------- RETURN BACK ------
-  legs[1].o_xy.setSpeed(400);
-  legs[1].o_xy.setMaxSpeed(400);
-  legs[1].o_xy.setAcceleration(400);
-  legs[1].o_xy.moveTo(300);
-*/
 const int Speed = 100;
 
+// The code to directly raise a leg.
 inline void Raise(Leg *l, int index) {
-  //return;
-  bool RHS = index < 3;
-  int moveAmount = RHS ? 100 : 80; 
+  bool RHS = index < 3; // Is it the Right hand side?
+  int moveAmount = RHS ? 100 : 80;  // Are we moving foward in relation to the motor or back - this has to be done due to the servos being on flipped sides.
 
   
 
-  int servoAmount = RHS ? 40 : 140;
+  int servoAmount = RHS ? 40 : 140; // Set to high up - same as above
   int servoAmoun2 = RHS ? 40 : 140;
 
+  // Write those values
   l->h_z.write(servoAmount);
   l->o_z.write(servoAmoun2);
 
   l->o_xy.write(moveAmount);
 }
 
+// The drop code, for dropping a leg.
 inline void Drop(Leg *l, int index) {
-  //return;
-  bool RHS = index < 3;
-  int moveAmount = 90;//600 : 200; //600, 200
 
+  bool RHS = index < 3; // Is it the right hand side
+
+  // write the standing values.
   int servoAmount = RHS ? 70 : 110;
   int servoAmoun2 = RHS ? 80 : 100;
 
@@ -67,9 +47,9 @@ inline void Drop(Leg *l, int index) {
   l->o_z.write(servoAmoun2);
 }
 
+// Are we returning?
 inline void Return(Leg *l, int index) {
-  bool RHS = index < 3;
-  int moveAmount = 90;
+  int moveAmount = 90; // set back to 90.
 
   l->o_xy.write(moveAmount);
 }
@@ -82,15 +62,17 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   // Left middle = 4
   // Left back = 5
 
+  // The time coeff defines how long there should be of clockcycles, before we move on.
+  // This isn't in seconds or millis due to the nature of the high intensity workload.
   unsigned long timeCoeff = 6000;
   unsigned long LargeTimeCoeff = timeCoeff;
 
+  // Is this the first time we've touched this leg?
   static bool firstPass[] = {false, false, false, false, false, false};
 
   
-
+  // Check if we should end the event.
   if(this->stage == -1) return 0;
-  //Serial.println(this->timeout);
 
 
   // One time stage code for motor information... etc.
@@ -98,7 +80,7 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
     Logging::Info("DEBUG STAGE");
 
     for (int i = 0; i < 6; i++) {
-
+      // Set all the legs to the stand position.
       Drop(&legs[i],i);
     }
 
@@ -108,24 +90,27 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   if (this->Stage(1)) {
     Logging::Info("Stage 1");
     this->timeout = LargeTimeCoeff;
-    
+
+    // If we have already raised the legs, drop them
     if (firstPass[3]) Drop(&legs[3],3);
     if (firstPass[5]) Drop(&legs[5],5);
     if (firstPass[1]) Drop(&legs[1],1);
     delay(400);
 
+    // Raise the new legs
     Raise(&legs[2],2);
     Raise(&legs[0],0);
     Raise(&legs[4],4);
 
     delay(400);
 
+    // If we just dropped those legs, lets move them back.
     if (firstPass[3]) Return(&legs[3],3);
     if (firstPass[5]) Return(&legs[5],5);
     if (firstPass[1]) Return(&legs[1],1);
 
     
-
+    // Confirm this was the first time we touched those legs.
     firstPass[1] = true;
     firstPass[3] = true;
     firstPass[5] = true;
@@ -135,16 +120,21 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
     Logging::Info("Stage 2");
     this->timeout = timeCoeff;
 
+
+    //Drop the currently raised legs
     Drop(&legs[2],2);
     Drop(&legs[0],0);
     Drop(&legs[4],4);
     delay(400);
 
+    //Raise the new legs
     Raise(&legs[3],3);
     Raise(&legs[5],5);
     Raise(&legs[1],1);
 
     delay (400);
+
+    // Push the legs back
     Return(&legs[2],2);
     Return(&legs[4],4);
     Return(&legs[0],0);
@@ -162,19 +152,21 @@ int WalkEvent::Proc(Leg *legs, vector2D position) {
   // Interpolate from infinity down to 0 (when stage wait will call).
   if (this->timeout != 0) {
     this->timeout -= 1;
-    //if(this->timeout % 1000 == 0 && this->stage != 0) Serial.println(firstPass);
-    //if(this->timeout % 100 == 0 && this->stage != 0) Serial.println(this->timeout);
-    //Logging::Info(this->timeout);
     if (this->timeout == 0) Logging::Ard("Timedout");
   }
 
   // Waits for next stage
   if (this->StageWait()) return 0;
+
+  // If stage 3 is hit, we shoud loop back to stage one. Comment this out if this is unintended.
   if (this->stage == 3) {this->stage = 1; this->timeout=0;}
+  // end the stage on stage 3.
   this->End(3);
   return 0;
 }
 
+
+// DEPRICATED.
 int SyncEvent::Proc(Leg *legs, vector2D position){
 
   /*for (int i = 0; i< 6; i++) {
@@ -206,6 +198,8 @@ int SyncEvent::Proc(Leg *legs, vector2D position){
   return 0;*/
 }
 
+
+// DEPRICATED.
 int TestEvent::Proc(Leg *legs, vector2D position) {
   if (this->Stage(0)) {
     for (int i =0; i<6; i++) {
